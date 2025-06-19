@@ -1,0 +1,84 @@
+/* Mevcut ayarlar korunuyor */
+
+/* Koyu Mod ve Turkuaz Tema Eklemeleri */
+body {
+  background-color: #121212;
+  color: #e0e0e0; /* Açık gri metin */
+}
+
+.blog-header, .navbar {
+  background-color: #1e1e1e;
+}
+
+.navbar-nav .nav-link {
+  color: #e0e0e0;
+}
+
+.navbar-nav .nav-link:hover {
+  color: #00bcd4;
+}
+
+.btn-warning, .btn-primary {
+  background-color: #00bcd4;
+  border-color: #00bcd4;
+}
+
+.btn-warning:hover, .btn-primary:hover {
+  background-color: #0097a7;
+  border-color: #0097a7;
+}
+
+.card, .p-3.bg-light.rounded {
+  background-color: #1e1e1e;
+  color: #e0e0e0;
+}
+
+a {
+  color: #00bcd4;
+}
+
+a:hover {
+  color: #0097a7;
+}
+
+footer.blog-footer {
+  background-color: #1e1e1e;
+  color: #e0e0e0;
+}
+
+/* Eski ayarlar (korunuyor) */
+.blog-header-logo {
+  font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+  font-size: 2.25rem;
+}
+
+.blog-header-logo:hover {
+  text-decoration: none;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+}
+
+.flex-auto {
+  flex: 0 0 auto;
+}
+
+.h-250 { height: 250px; }
+@media (min-width: 768px) {
+  .h-md-250 { height: 250px; }
+}
+
+.blog-pagination {
+  margin-bottom: 4rem;
+}
+
+.blog-post {
+  margin-bottom: 4rem;
+}
+
+.blog-post-meta {
+  margin-bottom: 1.25rem;
+  color: #727272;
+}
+

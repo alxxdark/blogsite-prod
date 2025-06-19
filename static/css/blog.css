@@ -1,0 +1,293 @@
+/* Koyu Mod ve Turkuaz Tema Eklemeleri */
+body {
+  background-color: #121212 !important;
+  color: #e0e0e0 !important;
+}
+
+.blog-header, .navbar, .navbar-collapse, .container, .navbar-brand, .nav-item, .nav-link {
+  background-color: #1e1e1e !important;
+  color: #e0e0e0 !important;
+}
+
+.navbar-nav .nav-link {
+  color: #e0e0e0 !important;
+  font-size: 1.1rem;
+  padding: 10px 15px;
+  transition: color 0.3s ease, background-color 0.3s ease;
+}
+
+.navbar-nav .nav-link:hover {
+  background-color: rgba(0, 188, 212, 0.1);
+  border-radius: 5px;
+  color: #00bcd4 !important;
+}
+
+.navbar-nav .nav-link.active {
+  border-bottom: 2px solid #00bcd4;
+}
+
+.blog-header-logo {
+  font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+  font-size: 2.25rem;
+  color: #e0e0e0 !important;
+}
+
+.blog-header-logo:hover {
+  text-decoration: none;
+  color: #00bcd4 !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+  color: #00bcd4 !important;
+}
+
+.blog-post, .p-3.bg-light.rounded, .card {
+  background-color: #1e1e1e !important;
+  color: #e0e0e0 !important;
+  border: none !important;
+}
+
+.blog-post-meta {
+  color: #e0e0e0 !important;
+}
+
+a {
+  color: #00bcd4 !important;
+}
+
+a:hover {
+  color: #0097a7 !important;
+}
+
+/* Footer Mesajı Daha Aşağı */
+footer.blog-footer {
+  background-color: #1e1e1e !important;
+  color: #e0e0e0 !important;
+  padding-top: 30px !important;
+  padding-bottom: 20px !important;
+  text-align: center;
+}
+
+.btn-warning, .btn-primary, .pagination .btn-warning, .pagination .btn-primary {
+  background-color: #00bcd4 !important;
+  border-color: #00bcd4 !important;
+  color: #fff !important;
+}
+
+.btn-warning:hover, .btn-primary:hover, .pagination .btn-warning:hover, .pagination .btn-primary:hover {
+  background-color: #0097a7 !important;
+  border-color: #0097a7 !important;
+}
+
+h3.text-uppercase.text-warning {
+  color: #00bcd4 !important;
+  letter-spacing: 2px;
+}
+
+.dashboard, .profile, .dashboard-header, .profile-header {
+  background-color: #1e1e1e !important;
+  color: #e0e0e0 !important;
+  border: none !important;
+}
+
+.card, .card-body, .content {
+  background-color: #1e1e1e !important;
+  color: #e0e0e0 !important;
+  border: 1px solid #333 !important;
+  box-shadow: 0 0 10px rgba(0, 188, 212, 0.5);
+}
+
+.maintenance-box {
+  max-width: 600px;
+  margin: 100px auto;
+  padding: 30px;
+  background-color: #1e1e1e !important;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 0 20px rgba(0, 188, 212, 0.5);
+}
+
+.maintenance-box h1 {
+  color: #00bcd4 !important;
+  font-size: 2.5rem;
+}
+
+.maintenance-box p {
+  color: #e0e0e0 !important;
+  font-size: 1.1rem;
+}
+
+/* Modern Hamburger Menü Simgesi Dijital Mavi */
+.navbar-toggler-icon {
+    background-image: none !important;
+}
+
+.navbar-toggler {
+  background-color: transparent !important;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  height: 24px;
+  width: 30px;
+  padding: 0;
+  cursor: pointer;
+}
+
+.toggler-line {
+  width: 100%;
+  height: 3px;
+  background-color: #00BFFF; /* Dijital Modern Mavi */
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.navbar-toggler:hover .toggler-line {
+  background-color: #00BFFF;
+}
+
+/* Dashboard Menü Hover Modern Mavi */
+.nav-item a.nav-link:hover {
+    color: #00BFFF !important;
+    background-color: rgba(0, 191, 255, 0.1);
+    border-radius: 5px;
+}
+
+/* Dashboard Kartlar Hover */
+.card:hover {
+    box-shadow: 0 0 20px rgba(0, 191, 255, 0.7);
+    transform: scale(1.03);
+    transition: all 0.3s ease;
+}
+
+.navbar-nav {
+    width: 100%;
+}
+
+/* You Liked This Rozeti */
+.liked-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  background-color: rgba(0, 191, 255, 0.1);
+  border: 1px solid #00bcd4;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  margin-top: 5px;
+}
+
+.liked-badge i {
+  margin-right: 5px;
+  color: #00BFFF;
+}
+/* Koyu-Mavi Tema Stilleri */
+
+body {
+    background-color: #121212; /* Koyu tema */
+    color: #ffffff; /* Beyaz yazılar */
+    font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+}
+
+a {
+    color: #1e90ff; /* Mavi linkler */
+    text-decoration: none;
+}
+
+a:hover {
+    color: #63b3ed; /* Daha açık mavi hover */
+    text-decoration: underline;
+}
+
+.navbar, .blog-header {
+    background-color: #1e1e1e; /* Koyu navbar ve header */
+    color: #ffffff;
+}
+
+.navbar-toggler {
+    border-color: #1e90ff;
+}
+
+.btn-warning {
+    background-color: #1e90ff;
+    border-color: #1e90ff;
+    color: #ffffff;
+}
+
+.btn-warning:hover {
+    background-color: #63b3ed;
+    border-color: #63b3ed;
+}
+
+input.form-control {
+    background-color: #2c2c2c;
+    color: #ffffff;
+    border: 1px solid #444;
+}
+
+input.form-control::placeholder {
+    color: #bbbbbb;
+}
+
+.blog-post {
+    background-color: #1e1e1e;
+    padding: 1rem;
+    border-radius: 0.5rem;
+}
+
+.blog-footer {
+    background-color: #1e1e1e;
+    color: #ffffff;
+    padding: 1rem;
+    text-align: center;
+}
+
+/* 🌐 Mobil Uyumluluk Eklentisi */
+@media (max-width: 768px) {
+    .navbar-nav {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .container {
+        padding: 10px;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        font-size: 20px;
+    }
+
+    p, ul, li {
+        font-size: 14px;
+    }
+
+    .navbar .nav-link {
+        padding: 8px;
+    }
+
+    .blog-header img {
+        height: 100px;
+    }
+
+    .input-group {
+        flex-direction: column;
+    }
+
+    .input-group input, .input-group button {
+        width: 100%;
+        margin-bottom: 5px;
+    }
+}
+
+@media (max-width: 480px) {
+    h1, h2, h3, h4, h5, h6 {
+        font-size: 18px;
+    }
+
+    p, ul, li {
+        font-size: 12px;
+    }
+
+    .blog-header img {
+        height: 80px;
+    }
+}

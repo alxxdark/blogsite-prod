@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-info text-center">{{ page.title }}</h2>
+    <hr>
+    <div style="color: #e0e0e0;">{{ page.content|safe }}</div>
+</div>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>{{ single_blog.title }}</h1>
+
+    {% if single_blog.featured_image %}
+        <img src="{{ single_blog.featured_image.url }}" alt="{{ single_blog.title }}" class="img-fluid rounded mb-3" style="max-width: 700px;">
+    {% else %}
+        <img src="/static/default-post-image.jpg" alt="Default Image" class="img-fluid rounded mb-3" style="max-width: 700px;">
+    {% endif %}
+
+    <p>Posted by {{ single_blog.author }} on {{ single_blog.created_at }}</p>
+    <p>Views: {{ single_blog.view_count }}</p>
+    <p>{{ single_blog.blog_body }}</p>
+
+    <h4 class="mt-4">Comments ({{ comment_count }})</h4>
+    {% if comments %}
+        {% for comment in comments %}
+        <div id="comment_{{ comment.id }}" style="border: 1px solid #ddd; border-radius: 5px; padding: 10px; max-width: 500px; margin-bottom: 10px;">
+            <p style="margin-bottom: 5px;"><strong>{{ comment.user }}</strong>: {{ comment.comment }}</p>
+            <small class="text-muted">{{ comment.created_at|timesince }} ago</small><br>
+            <a href="{% url 'like_comment' comment.id %}#comment_{{ comment.id }}" style="font-size: 0.9rem; color: #007bff; text-decoration: none;">👍 Like ({{ comment.total_likes }})</a>
+        </div>
+        {% endfor %}
+    {% else %}
+    <p>No comments yet.</p>
+    {% endif %}
+
+    <br>
+    {% if request.user.is_authenticated %}
+    <div style="border: 1px solid #ddd; border-radius: 5px; padding: 10px; max-width: 500px; margin-bottom: 20px;">
+        <h5 style="margin-bottom: 10px;">Leave a Comment</h5>
+        <form method="post" action="">
+            {% csrf_token %}
+            <textarea name="comment" rows="3" class="form-control mb-2" placeholder="Write your comment..." required></textarea>
+            <button type="submit" class="btn btn-primary btn-sm">Post Comment</button>
+        </form>
+    </div>
+    {% else %}
+    <p><a href="{% url 'login' %}">Login</a> to comment.</p>
+    {% endif %}
+</div>
+{% endblock %}

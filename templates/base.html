@@ -1,0 +1,186 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>Blogend</title>
+    <link rel="icon" type="image/png" href="{% static 'images/ejderha_logo.png' %}">
+
+    <link href="https://getbootstrap.com/docs/4.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Playfair+Display:700,900" rel="stylesheet">
+    <link href="{% static "css/blog.css" %}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <link rel="manifest" href="{% static 'manifest.json' %}"> 
+    <meta name="theme-color" content="#00bcd4">
+
+    <style>
+        @keyframes blogend-pulse {
+            0%   { color: #00bcd4; text-shadow: 0 0 0px #00bcd4; }
+            50%  { color: #00e5ff; text-shadow: 0 0 12px #00e5ff; }
+            100% { color: #00bcd4; text-shadow: 0 0 0px #00bcd4; }
+        }
+
+        .blogend-pulse {
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 2rem;
+            text-align: center;
+            animation: blogend-pulse 2s infinite;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .cookie-modal {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+            padding: 20px;
+            border: 1px solid #00bcd4;
+            border-radius: 10px;
+            z-index: 9999;
+            max-width: 350px;
+        }
+        .cookie-modal button {
+            margin-top: 10px;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Loading Screen -->
+<div id="loading-screen">
+  <div class="loader">
+    <div class="spinner">
+      <img src="{% static 'images/ejderha_logo.png' %}" alt="Blogend">
+    </div>
+  </div>
+</div>
+
+<div id="main-content" style="display:none;">
+<div class="container-fluid">
+    <header class="blog-header py-3">
+        <div class="row flex-nowrap justify-content-between align-items-center">
+            <div class="col-4 pt-1" style="padding-left: 0;">
+                <a class="blog-header-logo text-dark" href="{% url 'home' %}">
+                    <img src="{% static 'images/ejderha_logo.png' %}" alt="Blogend" style="height: 200px; margin-left: 0;">
+                </a>
+            </div>
+            <div class="col-4">
+                <form action="{% url "search" %}" method="GET">
+                    <div class="input-group">
+                        <input class="form-control" type="text" name="keyword" value="{{ keyword }}" placeholder="Enter search term..." aria-label="Enter search term..." aria-describedby="button-search" />
+                        <button type="submit" class="btn btn-warning" id="button-search" type="button">Go!</button>
+                    </div>
+                </form>
+                <div style="text-align: center; margin-top: 35px;">
+                    <a href="{% url 'home' %}" style="text-decoration: none;">
+                        <h2 class="blogend-pulse">Blogend</h2>
+                    </a>
+                </div>
+            </div>
+            <div class="col-4 d-flex justify-content-end align-items-center" style="margin-right: 20px;">
+                {% if not user.is_authenticated %}
+                <a class="btn btn-sm btn-warning" href="{% url "login" %}">Login</a> &nbsp;
+                <a class="btn btn-sm btn-outline-secondary" href="{% url "register" %}">Register</a>
+                {% else %}
+                <a href="{% url 'dashboard' %}" class="btn btn-warning text-white">Dashboard</a>
+                &emsp;
+                <a href="{% url 'logout' %}" class="btn btn-warning text-white">Logout</a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+</div>
+
+<nav class="navbar navbar-light bg-light">
+  <div class="container-fluid">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMenu"
+      aria-controls="navbarMenu" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="toggler-line"></span>
+      <span class="toggler-line"></span>
+      <span class="toggler-line"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarMenu">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" data-bs-toggle="collapse" href="#categorySubMenu" role="button" aria-expanded="false" aria-controls="categorySubMenu">
+            Categories
+          </a>
+          <div class="collapse" id="categorySubMenu">
+            <ul class="navbar-nav ms-3">
+              {% for cat in categories %}
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'posts_by_category' cat.id %}">{{ cat.category_name }}</a>
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'about' %}">About</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'contact' %}">Contact</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+    {% block content %}{% endblock %}
+</div>
+
+<footer class="blog-footer">
+    <p>Blogend built with by <a href="{% url 'about' %}">Ali Sağnak</a></p>
+</footer>
+</div>
+
+<div style="text-align: center; margin-bottom: 30px;">
+    <a href="/privacy-policy/" style="color: #00bcd4; text-decoration: none;">Privacy Policy</a>
+</div>
+
+<div id="cookieModal" class="cookie-modal" style="display:none;">
+  <p>We use cookies to personalize content and analyze our traffic. You can accept, reject, or manage your preferences.</p>
+  <button class="btn btn-primary btn-sm" onclick="acceptCookies()">Accept All</button>
+  <button class="btn btn-secondary btn-sm" onclick="declineCookies()">Reject All</button>
+  <button class="btn btn-outline-info btn-sm" onclick="managePreferences()">Manage Preferences</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  window.addEventListener('load', function() {
+    document.getElementById('loading-screen').style.display = 'none';
+    document.getElementById('main-content').style.display = 'block';
+    if (!localStorage.getItem("cookieAccepted")) {
+      document.getElementById('cookieModal').style.display = 'block';
+    }
+  });
+
+  function acceptCookies() {
+    localStorage.setItem("cookieAccepted", true);
+    document.getElementById("cookieModal").style.display = "none";
+  }
+
+  function declineCookies() {
+    localStorage.setItem("cookieDeclined", true);
+    document.getElementById("cookieModal").style.display = "none";
+  }
+
+  function managePreferences() {
+    alert("This will redirect to a preferences panel in the future.");
+  }
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register("{% static 'service-worker.js' %}")
+      .then(function(registration) {
+        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+      }, function(err) {
+        console.log('ServiceWorker registration failed: ', err);
+      });
+  }
+</script>
+</body>
+</html>

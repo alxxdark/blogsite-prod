@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Profile: {{ profile_user.username }}</h2>
+    <p>Email: {{ profile_user.email }}</p>
+    <p>Total Likes: {{ total_likes }}</p>
+    <p>Total Comments: {{ total_comments }}</p>
+
+    <h3>Liked Posts</h3>
+    <ul>
+    {% for post in liked_posts %}
+        <li><a href="{% url 'blogs' post.slug %}">{{ post.title }}</a></li>
+    {% empty %}
+        <li>No liked posts.</li>
+    {% endfor %}
+    </ul>
+
+    <h3>My Comments</h3>
+    <ul>
+    {% for comment in comments %}
+        <li>
+            <a href="{% url 'blogs' comment.blog.slug %}#comment_{{ comment.id }}">
+                {{ comment.blog.title }}: {{ comment.comment|truncatewords:10 }} ({{ comment.created_at|timesince }} ago)
+            </a>
+        </li>
+    {% empty %}
+        <li>No comments yet.</li>
+    {% endfor %}
+    </ul>
+</div>
+{% endblock %}

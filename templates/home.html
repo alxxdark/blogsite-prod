@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- Jumbotron -->
+{% for post in featured_posts %}
+    {% if forloop.first %}
+    <h3 class="text-uppercase text-warning" style="letter-spacing: 2px;">Featured Posts</h3>
+    <div class="jumbotron p-3 p-md-5 text-white rounded bg-dark" style="background-image: url({{ post.featured_image.url }}); background-blend-mode: overlay; background-size: cover;">
+        <div class="col-md-8 px-0">
+            <h1 class="display-4 font-italic">{{ post.title }}</h1>
+            <p class="lead my-3">{{ post.short_description|truncatewords:10 }}</p>
+            <p class="lead mb-0"><a href="{% url 'blogs' post.slug %}" class="text-white font-weight-bold">Continue reading...</a></p>
+        </div>
+    </div>
+    {% endif %}
+{% endfor %}
+
+<div class="row mb-2">
+    {% for post in featured_posts %}
+        {% if not forloop.first %}
+        <div class="col-md-6">
+            <div class="card border-0">
+                <div class="card-body">
+                    <h3><a href="{% url 'blogs' post.slug %}" class="text-dark">{{ post.title }}</a></h3>
+                    <small class="mb-1 text-muted">{{ post.created_at|timesince }} ago | {{ post.author }}</small>
+                    <p class="card-text">{{ post.short_description|truncatewords:10 }}</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    {% endfor %}
+</div>
+
+<h3 class="text-uppercase text-warning" style="letter-spacing: 2px;">Recent Articles</h3>
+<div class="row">
+    <div class="col-md-8 blog-main">
+        {% for post in page_obj %}
+        <div class="card border-0">
+            <div class="card-body">
+                <h3><a href="{% url 'blogs' post.slug %}" class="text-dark">{{ post.title }}</a></h3>
+                <small class="mb-1 text-muted">{{ post.created_at|timesince }} ago | {{ post.author }}</small>
+                <p class="card-text">{{ post.short_description|truncatewords:10 }}</p>
+
+                <!-- Beğeni Sistemi -->
+                <p>
+                    Likes: {{ post.likes.count }}  
+                    {% if user.is_authenticated %}
+                        {% if user in post.likes.all %}
+                            <span class="liked-badge">
+                                <i class="fa fa-heart"></i> You liked this
+                            </span>
+                        {% else %}
+                            <a href="{% url 'like_post' post.slug %}" class="btn btn-sm btn-primary">Like</a>
+                        {% endif %}
+                    {% else %}
+                        <a href="{% url 'login' %}" class="btn btn-sm btn-primary">Login to like</a>
+                    {% endif %}
+                </p>
+
+            </div>
+        </div>
+        {% endfor %}
+
+        <div class="pagination">
+            <span class="step-links">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1" class="btn btn-warning btn-sm">First</a>
+                    <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-warning btn-sm">Previous</a>
+                {% endif %}
+
+                <span class="current btn btn-light btn-sm">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </span>
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}" class="btn btn-warning btn-sm">Next</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}" class="btn btn-warning btn-sm">Last</a>
+                {% endif %}
+            </span>
+        </div>
+    </div>
+
+    <aside class="col-md-4 blog-sidebar">
+        <div class="p-3 mb-3 bg-light rounded">
+            <h4 class="font-italic">LinkedIn</h4>
+            <p class="mb-0">
+                <a href="https://www.linkedin.com/in/ali-sagnak" target="_blank">LinkedIn</a>
+            </p>
+        </div>
+    </aside>
+</div>
+
+{% endblock %}
