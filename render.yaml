@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: blogsite-1
+    env: python
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    startCommand: gunicorn blog_main.wsgi:application
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: blog_main.settings
