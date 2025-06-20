@@ -5,8 +5,14 @@ from .forms import RegistrationForm
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import auth
 from django.core.paginator import Paginator
+from django.core.management import call_command
+
 
 def home(request):
+    try:
+        call_command("loaddata", "data.json")
+    except:
+        pass
     featured_posts = Blog.objects.filter(is_featured=True, status="Published").order_by("-updated_at")
     recent_posts_list = Blog.objects.filter(is_featured=False, status="Published").order_by("-updated_at")
     
