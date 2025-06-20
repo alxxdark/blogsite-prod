@@ -87,18 +87,32 @@ WSGI_APPLICATION = 'blog_main.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+import dj_database_url
+
+import os
+import dj_database_url
+
+import os
+import dj_database_url
+
 if os.environ.get("DATABASE_URL"):
+    # Render veya canlı ortamda PostgreSQL kullan
     DATABASES = {
         'default': dj_database_url.config(default=os.environ.get("DATABASE_URL"))
     }
 else:
-    # Yerel geliştirme ortamı için sqlite
+    # Yerel ortamda SQLite kullan
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
+
+
+
+
+
 
 
 # Password validation
