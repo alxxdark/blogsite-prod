@@ -47,6 +47,9 @@ INSTALLED_APPS = [
     
 ]
 
+SITE_DOMAIN = os.environ.get('SITE_DOMAIN', 'http://localhost:8000')
+
+
 MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
