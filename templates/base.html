@@ -9,9 +9,16 @@
     <title>Blogend</title>
     <link rel="icon" type="image/png" href="{% static 'images/ejderha_logo.png' %}">
 
-    <link href="https://getbootstrap.com/docs/4.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap 5.3.2 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css?family=Playfair+Display:700,900" rel="stylesheet">
-    <link href="{% static "css/blog.css" %}" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="{% static 'css/blog.css' %}" rel="stylesheet">
+
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
     <link rel="manifest" href="{% static 'manifest.json' %}"> 
@@ -51,7 +58,6 @@
     </style>
 </head>
 <body>
-
 <!-- Loading Screen -->
 <div id="loading-screen">
   <div class="loader">
@@ -148,7 +154,9 @@
   <button class="btn btn-outline-info btn-sm" onclick="managePreferences()">Manage Preferences</button>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Bootstrap JS Bundle CDN -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
 <script>
   window.addEventListener('load', function() {
     document.getElementById('loading-screen').style.display = 'none';
@@ -172,6 +180,7 @@
     alert("This will redirect to a preferences panel in the future.");
   }
 </script>
+
 <script>
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register("{% static 'service-worker.js' %}")
