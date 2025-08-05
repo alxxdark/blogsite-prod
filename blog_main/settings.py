@@ -6,9 +6,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-(14y1-e0z@dfg@mc(&*9xnaxe!(jpa3+tp@khmj92!3x$+$@%b'
 
-DEBUG = False  # CANLIYA ÇIKTIĞIMIZ İÇİN FALSE!
+DEBUG = True  # CANLIYA ÇIKTIĞIMIZ İÇİN FALSE!
 
-ALLOWED_HOSTS = ['.onrender.com']
+ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -90,7 +90,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [BASE_DIR / 'blog_main' / 'static']
 
 # DÜZELTME: Manifest kaldırıldı, hashed files istemiyoruz.
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+#STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 # MEDIA
 MEDIA_URL = "/media/"
