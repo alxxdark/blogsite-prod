@@ -5,6 +5,6 @@ services:
     buildCommand: |
       pip install --upgrade pip
       pip install -r requirements.txt
-      python manage.py migrate
       python manage.py collectstatic --noinput
-    startCommand: gunicorn blog_main.wsgi:application
+    startCommand: |
+      python manage.py migrate && gunicorn blog_main.wsgi:application
