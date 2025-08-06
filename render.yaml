@@ -1,8 +1,10 @@
 services:
   - type: web
-    name: blogsite-prod
+    name: blogsite
     env: python
     buildCommand: |
+      pip install --upgrade pip
       pip install -r requirements.txt
+      python manage.py migrate
       python manage.py collectstatic --noinput
-    startCommand: gunicorn blog_main.wsgi --log-file -
+    startCommand: gunicorn blog_main.wsgi:application
