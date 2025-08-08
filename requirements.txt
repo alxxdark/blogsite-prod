@@ -9,3 +9,5 @@ tzdata==2025.1
 django-crispy-forms==2.4
 crispy-bootstrap4==2024.10
 pillow==11.1.0
+python-dotenv==1.0.1
+
