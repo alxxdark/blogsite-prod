@@ -28,7 +28,9 @@ INSTALLED_APPS = [
     "dashboards",
 ]
 
-SITE_DOMAIN = os.environ.get('SITE_DOMAIN', 'http://localhost:8000')
+# Mail gönderiminde kullanılacak temel ayar
+SITE_DOMAIN = "https://blogsite-prod.onrender.com"
+
 
 MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',
