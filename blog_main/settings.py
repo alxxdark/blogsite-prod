@@ -21,7 +21,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    "blogs",
     "assignments",
     'crispy_forms',
     "crispy_bootstrap4",
@@ -32,15 +31,19 @@ INSTALLED_APPS = [
 SITE_DOMAIN = "https://blogsite-prod.onrender.com"  # sonda / yok
 
 # Gönderici adı + konuya prefix (isteğe bağlı)
-DEFAULT_FROM_EMAIL = "Blogend <alisagnak4607@gmail.com>"
+DEFAULT_FROM_EMAIL = os.environ.get(
+    'DEFAULT_FROM_EMAIL',
+    'Blogend <alisagnak4607@gmail.com>'
+)
+
 EMAIL_SUBJECT_PREFIX = "[Blogend] "
 
 
 
 
 MIDDLEWARE = [
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
