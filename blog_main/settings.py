@@ -29,7 +29,11 @@ INSTALLED_APPS = [
 ]
 
 # Mail gönderiminde kullanılacak temel ayar
-SITE_DOMAIN = "https://blogsite-prod.onrender.com"
+# settings.py
+DEFAULT_FROM_EMAIL = "Blogend <alisagnak4607@gmail.com>"
+EMAIL_SUBJECT_PREFIX = "[Blogend] "
+SITE_DOMAIN = "https://blogsite-prod.onrender.com"  # sonda / yok
+
 
 
 MIDDLEWARE = [
