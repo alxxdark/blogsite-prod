@@ -34,3 +34,5 @@ def notify_users_on_new_post(sender, instance, created, **kwargs):
     )
     if recipients:
         send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, recipients, fail_silently=False)
+
+    print("[MAIL DEBUG]", settings.DEFAULT_FROM_EMAIL, recipients)
