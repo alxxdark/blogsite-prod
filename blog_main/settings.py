@@ -25,14 +25,16 @@ INSTALLED_APPS = [
     "assignments",
     'crispy_forms',
     "crispy_bootstrap4",
+    'blogs.apps.BlogsConfig',
     "dashboards",
 ]
 
-# Mail gönderiminde kullanılacak temel ayar
-# settings.py
+SITE_DOMAIN = "https://blogsite-prod.onrender.com"  # sonda / yok
+
+# Gönderici adı + konuya prefix (isteğe bağlı)
 DEFAULT_FROM_EMAIL = "Blogend <alisagnak4607@gmail.com>"
 EMAIL_SUBJECT_PREFIX = "[Blogend] "
-SITE_DOMAIN = "https://blogsite-prod.onrender.com"  # sonda / yok
+
 
 
 
