@@ -25,6 +25,7 @@ def notify_users_on_new_post(sender, instance, created, **kwargs):
     snippet = (getattr(instance, "short_description", "") or getattr(instance, "content", "") or "")[:160]
     message = f"{snippet}...\nDevamını oku: {post_url}"
 
+    # Alıcı listesi
     recipients = list(
         User.objects.filter(is_active=True)
         .exclude(email__isnull=True)
@@ -32,7 +33,18 @@ def notify_users_on_new_post(sender, instance, created, **kwargs):
         .exclude(email__icontains="example.com")  # placeholderları ele
         .values_list("email", flat=True)
     )
-    if recipients:
-        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, recipients, fail_silently=False)
 
-    print("[MAIL DEBUG]", settings.DEFAULT_FROM_EMAIL, recipients)
+    # Debug log
+    print("[MAIL DEBUG] FROM=", settings.DEFAULT_FROM_EMAIL,
+          "HOST=", settings.EMAIL_HOST,
+          "PORT=", settings.EMAIL_PORT,
+          "TLS=", settings.EMAIL_USE_TLS,
+          "USER=", settings.EMAIL_HOST_USER,
+          "RECIPIENTS=", recipients)
+
+    if recipients:
+        try:
+            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, recipients, fail_silently=False)
+            print("[MAIL DEBUG] send_mail OK")
+        except Exception as e:
+            print("[MAIL ERROR]", repr(e))

@@ -31,10 +31,11 @@ INSTALLED_APPS = [
 SITE_DOMAIN = "https://blogsite-prod.onrender.com"  # sonda / yok
 
 # Gönderici adı + konuya prefix (isteğe bağlı)
-DEFAULT_FROM_EMAIL = os.environ.get(
-    'DEFAULT_FROM_EMAIL',
-    'Blogend <alisagnak4607@gmail.com>'
-)
+# settings.py
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'alisagnak4607@gmail.com')
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')  # 'alisagnak4607@gmail.com' olmalı
+# (DEFAULT_FROM_EMAIL == EMAIL_HOST_USER)
+
 
 EMAIL_SUBJECT_PREFIX = "[Blogend] "
 
