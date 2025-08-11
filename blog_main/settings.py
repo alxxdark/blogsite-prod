@@ -1,17 +1,14 @@
 import os
 from pathlib import Path
 import dj_database_url
-
-
 from dotenv import load_dotenv
+
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-(14y1-e0z@dfg@mc(&*9xnaxe!(jpa3+tp@khmj92!3x$+$@%b'
-
-DEBUG = True  
-
+DEBUG = True
 ALLOWED_HOSTS = ['.onrender.com']
 
 INSTALLED_APPS = [
@@ -21,26 +18,19 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    "assignments",
+
+    'assignments',
     'crispy_forms',
-    "crispy_bootstrap4",
+    'crispy_bootstrap4',
     'blogs.apps.BlogsConfig',
-    "dashboards",
+    'dashboards',
+
+    # Media (Cloudinary)
+    'cloudinary',
+    'cloudinary_storage',
 ]
 
-SITE_DOMAIN = "https://blogsite-prod.onrender.com"  # sonda / yok
-
-# Gönderici adı + konuya prefix (isteğe bağlı)
-# settings.py
-DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'alisagnak4607@gmail.com')
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')  # 'alisagnak4607@gmail.com' olmalı
-# (DEFAULT_FROM_EMAIL == EMAIL_HOST_USER)
-
-
-EMAIL_SUBJECT_PREFIX = "[Blogend] "
-
-
-
+SITE_DOMAIN = "https://blogsite-prod.onrender.com"  # sondaki / yok
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -66,8 +56,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                "blogs.context_processors.get_categories",
-                "blogs.context_processors.get_social_links",
+                'blogs.context_processors.get_categories',
+                'blogs.context_processors.get_social_links',
             ],
         },
     },
@@ -100,27 +90,34 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-# STATIC FILES
+# STATIC
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [BASE_DIR / 'blog_main' / 'static']
-
-# DÜZELTME: Manifest kaldırıldı, hashed files istemiyoruz.
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
-# MEDIA
-INSTALLED_APPS += ["cloudinary", "cloudinary_storage"]
-DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
-MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
+# MEDIA (Cloudinary)
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
-CRISPY_TEMPLATE_PACK = "bootstrap4"
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
-# EMAIL SETTINGS
+# ========= EMAIL SETTINGS =========
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = os.environ.get('EMAIL_HOST')
+EMAIL_HOST = os.environ.get('EMAIL_HOST')                       # örn: smtp.gmail.com
 EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
 EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')             # örn: alisagnak4607@gmail.com
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')     # Gmail App Password vb.
+
+# Gönderen adresi: login adresiyle aynı tut (Gmail için önemli)
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER or '')
+SERVER_EMAIL = os.environ.get('SERVER_EMAIL', EMAIL_HOST_USER or '')
+EMAIL_SUBJECT_PREFIX = "[Blogend] "
+EMAIL_TIMEOUT = int(os.environ.get('EMAIL_TIMEOUT', 20))
+
+# (İsteğe bağlı) Bildirim alıcısı fallback
+NOTIFY_DEFAULT_RECIPIENTS = os.environ.get('NOTIFY_DEFAULT_RECIPIENTS', 'alisagnak4607@gmail.com').split(',')
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
