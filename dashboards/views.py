@@ -1,7 +1,6 @@
 from django.shortcuts import get_object_or_404, redirect, render
 from blogs.models import Blog, Category
 from .forms import AddUserForm, BlogPostForm, CategoryForm, EditUserForm
-from django.template.defaultfilters import slugify
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 
@@ -33,7 +32,8 @@ def add_category(request):
         if form.is_valid():
             form.save()
             return redirect("categories")
-    form = CategoryForm()
+    else:
+        form = CategoryForm()
     context = {"form": form}
     return render(request, "dashboard/add_category.html", context)
 
@@ -46,7 +46,8 @@ def edit_category(request, pk):
         if form.is_valid():
             form.save()
             return redirect("categories")
-    form = CategoryForm(instance=category)
+    else:
+        form = CategoryForm(instance=category)
     context = {"form": form, "category": category}
     return render(request, "dashboard/edit_category.html", context)
 
@@ -60,8 +61,9 @@ def delete_category(request, pk):
 def posts(request):
     if not request.user.is_authenticated:
         return redirect('/')
-    post_list = Blog.objects.all().order_by('-id')  # İsteğe bağlı: en yeni yazılar önce
-    paginator = Paginator(post_list, 5)  # Her sayfada 5 post
+    # Admin tarafı: tüm yazıları listelemek mantıklı, en yeniler en üstte
+    post_list = Blog.objects.all().order_by('-id')
+    paginator = Paginator(post_list, 5)  # sayfa başı 5 post
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     context = {"page_obj": page_obj}
@@ -75,12 +77,11 @@ def add_post(request):
         if form.is_valid():
             post = form.save(commit=False)
             post.author = request.user
-            post.save()
-            title = form.cleaned_data["title"]
-            post.slug = slugify(title) + "-" + str(post.id)
+            # ÖNEMLİ: Sadece 1 kez save; slug'ı model otomatik oluşturacak
             post.save()
             return redirect("posts")
-    form = BlogPostForm()
+    else:
+        form = BlogPostForm()
     context = {"form": form}
     return render(request, "dashboard/add_post.html", context)
 
@@ -91,12 +92,11 @@ def edit_post(request, pk):
     if request.method == "POST":
         form = BlogPostForm(request.POST, request.FILES, instance=post)
         if form.is_valid():
-            post = form.save()
-            title = form.cleaned_data["title"]
-            post.slug = slugify(title) + "-" + str(post.id)
-            post.save()
+            # Slug'ı elle değiştirmiyoruz; mevcut slug sabit kalır (SEO için iyi)
+            form.save()
             return redirect("posts")
-    form = BlogPostForm(instance=post)
+    else:
+        form = BlogPostForm(instance=post)
     context = {"form": form, "post": post}
     return render(request, "dashboard/edit_post.html", context)
 
@@ -122,7 +122,8 @@ def add_user(request):
         if form.is_valid():
             form.save()
             return redirect("users")
-    form = AddUserForm()
+    else:
+        form = AddUserForm()
     context = {"form": form}
     return render(request, "dashboard/add_user.html", context)
 
@@ -135,7 +136,8 @@ def edit_user(request, pk):
         if form.is_valid():
             form.save()
             return redirect("users")
-    form = EditUserForm(instance=user)
+    else:
+        form = EditUserForm(instance=user)
     context = {"form": form}
     return render(request, "dashboard/edit_user.html", context)
 
