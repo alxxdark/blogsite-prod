@@ -18,7 +18,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
+    "cloudinary",
+    "cloudinary_storage",
     'assignments',
     'crispy_forms',
     'crispy_bootstrap4',
@@ -96,11 +97,16 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [BASE_DIR / 'blog_main' / 'static']
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
-# MEDIA (Cloudinary)
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
-
+CLOUDINARY_URL = os.getenv("CLOUDINARY_URL")
+if CLOUDINARY_URL:
+    DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+    # MEDIA_URL Cloudinary tarafından otomatik verilir, burada sembolik dursa yeter
+    MEDIA_URL = "/media/"
+else:
+    # Lokal geliştirme için
+    MEDIA_URL = "/media/"
+    MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+    
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 # ========= EMAIL SETTINGS =========
