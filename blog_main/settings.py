@@ -12,23 +12,26 @@ DEBUG = True
 ALLOWED_HOSTS = ['.onrender.com']
 
 INSTALLED_APPS = [
+    # Django
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    "cloudinary",
-    "cloudinary_storage",
-    'assignments',
+
+    # 3rd party
     'crispy_forms',
     'crispy_bootstrap4',
+
+    # Media (Cloudinary) – TEK KEZ ve bu sırayla
+    'cloudinary_storage',
+    'cloudinary',
+
+    # Local apps
+    'assignments',
     'blogs.apps.BlogsConfig',
     'dashboards',
-
-    # Media (Cloudinary)
-    'cloudinary',
-    'cloudinary_storage',
 ]
 
 SITE_DOMAIN = "https://blogsite-prod.onrender.com"  # sondaki / yok
@@ -97,13 +100,12 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [BASE_DIR / 'blog_main' / 'static']
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
+# MEDIA (Cloudinary aktifse)
 CLOUDINARY_URL = os.getenv("CLOUDINARY_URL")
 if CLOUDINARY_URL:
     DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
-    # MEDIA_URL Cloudinary tarafından otomatik verilir, burada sembolik dursa yeter
-    MEDIA_URL = "/media/"
+    MEDIA_URL = "/media/"   # sembolik; URL'ler cloudinary'den gelecek
 else:
-    # Lokal geliştirme için
     MEDIA_URL = "/media/"
     MEDIA_ROOT = BASE_DIR / "media"
 
@@ -111,19 +113,17 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 # ========= EMAIL SETTINGS =========
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = os.environ.get('EMAIL_HOST')                       # örn: smtp.gmail.com
+EMAIL_HOST = os.environ.get('EMAIL_HOST')
 EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
 EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')             # örn: alisagnak4607@gmail.com
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')     # Gmail App Password vb.
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 
-# Gönderen adresi: login adresiyle aynı tut (Gmail için önemli)
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER or '')
 SERVER_EMAIL = os.environ.get('SERVER_EMAIL', EMAIL_HOST_USER or '')
 EMAIL_SUBJECT_PREFIX = "[Blogend] "
 EMAIL_TIMEOUT = int(os.environ.get('EMAIL_TIMEOUT', 20))
 
-# (İsteğe bağlı) Bildirim alıcısı fallback
 NOTIFY_DEFAULT_RECIPIENTS = os.environ.get('NOTIFY_DEFAULT_RECIPIENTS', 'alisagnak4607@gmail.com').split(',')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
