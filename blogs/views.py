@@ -9,8 +9,8 @@ from blogs.models import Blog, Category, Comment
 from blogs.forms import CommentForm
 
 from .forms import ContactForm
-from .models import ContactMessage
-from .models import StaticPage
+from .models import ContactMessage,StaticPage
+
 
 
 def posts_by_category(request, category_id):
@@ -141,3 +141,11 @@ def contact_view(request):
 def static_page(request, slug):
     page = get_object_or_404(StaticPage, slug=slug)
     return render(request, 'static_page.html', {'page': page})
+
+
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def toggle_save_post(request, slug):
+    # SavedPost modeli yoksa şimdilik geri yönlendir
+    return redirect(request.META.get('HTTP_REFERER', '/'))
