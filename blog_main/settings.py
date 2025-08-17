@@ -10,12 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-(14y1-e0z@dfg@mc(&*9xnaxe!(jpa3+tp@khmj92!3x$+$@%b'
 DEBUG = os.environ.get("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = ['.onrender.com', 'localhost', '127.0.0.1']
-
-CSRF_TRUSTED_ORIGINS = [
-    'https://blogsite-prod.onrender.com',
-]
-
+ALLOWED_HOSTS = ['.onrender.com']
 
 INSTALLED_APPS = [
     # Django
@@ -42,11 +37,6 @@ INSTALLED_APPS = [
 ]
 
 SITE_DOMAIN = "https://blogsite-prod.onrender.com"  # sondaki / yok
-
-STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_DIRS = [BASE_DIR / 'blog_main' / 'static']
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -118,7 +108,11 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-
+# STATIC
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = [BASE_DIR / 'blog_main' / 'static']
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 # MEDIA (Cloudinary aktifse)
 CLOUDINARY_URL = os.getenv("CLOUDINARY_URL")
