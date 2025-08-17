@@ -21,4 +21,6 @@ urlpatterns = [
 
     # En sonda statik sayfa
     path('<slug:slug>/', views.static_page, name='static_page'),
+
+    path('profile/edit/', views.profile_edit, name='profile_edit'),
 ]

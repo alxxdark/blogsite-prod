@@ -10,6 +10,7 @@ from django.utils import timezone
 
 from blogs.models import Blog, Category, Comment, ContactMessage, StaticPage, SavedPost
 from blogs.forms import CommentForm
+from .forms import ProfileForm
 
 
 def posts_by_category(request, category_id):
@@ -190,3 +191,15 @@ def contact_view(request):
 def static_page(request, slug):
     page = get_object_or_404(StaticPage, slug=slug)
     return render(request, 'static_page.html', {'page': page})
+
+@login_required
+def profile_edit(request):
+    profile = request.user.profile
+    if request.method == 'POST':
+        form = ProfileForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            form.save()
+            return redirect('profile', username=request.user.username)
+    else:
+        form = ProfileForm(instance=profile)
+    return render(request, 'profile_edit.html', {'form': form})
