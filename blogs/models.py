@@ -35,7 +35,7 @@ class Blog(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     likes = models.ManyToManyField(User, related_name='liked_posts', blank=True)
-    view_count = models.IntegerField(default=0)  # Görüntülenme sayısı
+    view_count = models.IntegerField(default=0)
 
     def __str__(self):
         return self.title
@@ -44,12 +44,10 @@ class Blog(models.Model):
         return reverse('blogs', kwargs={'slug': self.slug})
 
     def save(self, *args, **kwargs):
-        # slug yoksa başlıktan üret
         if not self.slug:
             base = slugify(self.title)[:50] or "yazi"
             slug = base
             i = 1
-            # Aynı slug varsa -2, -3... ekle
             while Blog.objects.filter(slug=slug).exclude(pk=self.pk).exists():
                 i += 1
                 slug = f"{base}-{i}"
@@ -102,3 +100,17 @@ class StaticPage(models.Model):
 
     def __str__(self):
         return self.title
+
+
+# ---- YENİ: Kaydet/Favori ----
+class SavedPost(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='saved_posts')
+    post = models.ForeignKey(Blog, on_delete=models.CASCADE, related_name='saved_by')
+    saved_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'post')  # bir postu iki kez kaydetmesin
+        ordering = ['-saved_at']
+
+    def __str__(self):
+        return f"{self.user.username} saved {self.post.title}"

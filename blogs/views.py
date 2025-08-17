@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 from django.utils.timesince import timesince
 from django.utils import timezone
 
-from blogs.models import Blog, Category, Comment, ContactMessage, StaticPage
+from blogs.models import Blog, Category, Comment, ContactMessage, StaticPage, SavedPost
 from blogs.forms import CommentForm
 
 
@@ -20,11 +20,7 @@ def posts_by_category(request, category_id):
 
 def blogs(request, slug):
     """
-    Tekil blog + yorumlar.
-    Normal GET: sayfayı render eder.
-    POST:
-      - AJAX ise JSON döner (yenileme yok)
-      - Normal form ise redirect eder.
+    Tekil blog + yorumlar + is_saved bayrağı.
     """
     single_blog = get_object_or_404(Blog, slug=slug, status="Published")
 
@@ -75,11 +71,17 @@ def blogs(request, slug):
 
         return HttpResponseRedirect(reverse('blogs', args=[slug]) + f'#comment_{comment.id}')
 
+    # is_saved bilgisi (butonun durumu için)
+    is_saved = False
+    if request.user.is_authenticated:
+        is_saved = SavedPost.objects.filter(user=request.user, post=single_blog).exists()
+
     context = {
         "single_blog": single_blog,
         "comments": comments,
         "comment_count": comment_count,
         "form": CommentForm(),
+        "is_saved": is_saved,
     }
     return render(request, "blogs.html", context)
 
@@ -114,6 +116,25 @@ def like_post(request, slug):
     return redirect(request.META.get('HTTP_REFERER', 'home'))
 
 
+# ---- YENİ: Kaydet / Kaldır ----
+@require_POST
+@login_required
+def toggle_save_post(request, slug):
+    post = get_object_or_404(Blog, slug=slug, status="Published")
+    obj, created = SavedPost.objects.get_or_create(user=request.user, post=post)
+    if created:
+        saved = True
+    else:
+        obj.delete()
+        saved = False
+
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return JsonResponse({"ok": True, "saved": saved})
+
+    # normal fallback
+    return redirect(request.META.get('HTTP_REFERER', reverse('blogs', args=[slug])))
+
+
 @login_required
 def profile_view(request, username):
     profile_user = get_object_or_404(User, username=username)
@@ -121,12 +142,17 @@ def profile_view(request, username):
     comments = Comment.objects.filter(user=profile_user)
     total_likes = liked_posts.count()
     total_comments = comments.count()
+
+    # YENİ: kaydedilenler
+    saved_posts = SavedPost.objects.filter(user=profile_user).select_related("post")
+
     return render(request, 'profile.html', {
         'profile_user': profile_user,
         'liked_posts': liked_posts,
         'comments': comments,
         'total_likes': total_likes,
         'total_comments': total_comments,
+        'saved_posts': saved_posts,
     })
 
 
@@ -147,8 +173,7 @@ def about(request):
 
 
 def contact_view(request):
-    form = CommentForm()  # dummy init to avoid unused import warnings
-    from blogs.forms import ContactForm  # emin olmak için burada import
+    from blogs.forms import ContactForm
     form = ContactForm()
     if request.method == 'POST':
         form = ContactForm(request.POST)

@@ -11,6 +11,9 @@ urlpatterns = [
     path('comment/<int:comment_id>/like/', views.like_comment, name='like_comment'),
     path('like/<slug:slug>/', views.like_post, name='like_post'),
 
+    # KAYDET / KALDIR
+    path('blog/<slug:slug>/save/', views.toggle_save_post, name='toggle_save_post'),
+
     # Diğerleri
     path('about/', views.about, name='about'),
     path('profile/<str:username>/', views.profile_view, name='profile'),
