@@ -11,4 +11,5 @@ urlpatterns = [
     path('profile/<str:username>/', views.profile_view, name='profile'),
     path('contact/', views.contact_view, name='contact'),
     path('<slug:slug>/', views.static_page, name='static_page'),
+    path("post/<slug:slug>/save/", views.toggle_save_post, name="toggle_save_post"),
 ]

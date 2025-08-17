@@ -12,15 +12,43 @@
 
     <p>Posted by {{ single_blog.author }} on {{ single_blog.created_at }}</p>
     <p>Views: {{ single_blog.view_count }}</p>
-    <p>{{ single_blog.blog_body }}</p>
+
+    <!-- İçerik -->
+    <article class="mb-4">
+        {{ single_blog.blog_body|safe }}
+    </article>
 
     <h4 class="mt-4">Comments ({{ comment_count }})</h4>
     {% if comments %}
         {% for comment in comments %}
-        <div id="comment_{{ comment.id }}" style="border: 1px solid #ddd; border-radius: 5px; padding: 10px; max-width: 500px; margin-bottom: 10px;">
+        <div id="comment_{{ comment.id }}" style="border: 1px solid #ddd; border-radius: 5px; padding: 10px; max-width: 700px; margin-bottom: 10px;">
             <p style="margin-bottom: 5px;"><strong>{{ comment.user }}</strong>: {{ comment.comment }}</p>
             <small class="text-muted">{{ comment.created_at|timesince }} ago</small><br>
-            <a href="{% url 'like_comment' comment.id %}#comment_{{ comment.id }}" style="font-size: 0.9rem; color: #007bff; text-decoration: none;">👍 Like ({{ comment.total_likes }})</a>
+            <a href="{% url 'like_comment' comment.id %}#comment_{{ comment.id }}" style="font-size: 0.9rem; color: #007bff; text-decoration: none;">👍 Like ({{ comment.likes.count }})</a>
+
+            <!-- Yanıtla formu (giriş yapmışsa) -->
+            {% if user.is_authenticated %}
+                <form method="post" action="{% url 'blogs' single_blog.slug %}" class="mt-2">
+                    {% csrf_token %}
+                    <input type="hidden" name="parent_id" value="{{ comment.id }}">
+                    <div class="input-group">
+                        <input type="text" name="comment" class="form-control" placeholder="Yanıt yaz..." required>
+                        <button type="submit" class="btn btn-outline-primary btn-sm">Yanıtla</button>
+                    </div>
+                </form>
+            {% endif %}
+
+            <!-- Alt yanıtlar -->
+            {% if comment.replies.all %}
+                <div class="mt-2 ms-3">
+                    {% for reply in comment.replies.all %}
+                        <div class="p-2 border rounded mb-2">
+                            <p class="mb-1">↳ <strong>{{ reply.user }}</strong>: {{ reply.comment }}</p>
+                            <small class="text-muted">{{ reply.created_at|timesince }} ago</small>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
         </div>
         {% endfor %}
     {% else %}
@@ -29,7 +57,7 @@
 
     <br>
     {% if request.user.is_authenticated %}
-    <div style="border: 1px solid #ddd; border-radius: 5px; padding: 10px; max-width: 500px; margin-bottom: 20px;">
+    <div style="border: 1px solid #ddd; border-radius: 5px; padding: 10px; max-width: 700px; margin-bottom: 20px;">
         <h5 style="margin-bottom: 10px;">Leave a Comment</h5>
         <form method="post" action="">
             {% csrf_token %}
