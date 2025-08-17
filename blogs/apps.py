@@ -5,4 +5,4 @@ class BlogsConfig(AppConfig):
     name = 'blogs'
 
     def ready(self):
-        import blogs.signals  # sinyalleri tek yerden yükle
+        from. import signals  # sinyalleri tek yerden yükle

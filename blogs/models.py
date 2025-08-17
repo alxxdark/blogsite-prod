@@ -77,6 +77,7 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     bio = models.TextField(blank=True)
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
+    cover = models.ImageField(upload_to='covers/', blank=True, null=True)  # ✅ yeni
 
     def __str__(self):
         return f"{self.user.username} Profile"

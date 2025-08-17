@@ -48,3 +48,8 @@ def notify_users_on_new_post(sender, instance, created, **kwargs):
             print("[MAIL DEBUG] send_mail OK")
         except Exception as e:
             print("[MAIL ERROR]", repr(e))
+
+@receiver(post_save, sender=User)
+def create_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.get_or_create(user=instance)
