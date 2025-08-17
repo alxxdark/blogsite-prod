@@ -5,9 +5,45 @@ from django.views.decorators.http import require_POST
 from django.urls import reverse
 from django.db.models import Q
 from django.contrib.auth.models import User
+from django.contrib import messages
 from django.utils.timesince import timesince
 from django.utils import timezone
+from .models import Profile, Blog, Comment, SavedPost
+@login_required
+def profile_edit(request):
+    # Her kullanıcı kendi profilini düzenler
+    profile, _ = Profile.objects.get_or_create(user=request.user)
+    if request.method == 'POST':
+        form = ProfileForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profilin güncellendi.")
+            return redirect('profile', username=request.user.username)
+        else:
+            messages.error(request, "Formda hatalar var. Lütfen kontrol et.")
+    else:
+        form = ProfileForm(instance=profile)
+    return render(request, 'profile_edit.html', {'form': form})
 
+@login_required
+def profile_view(request, username):
+    profile_user = get_object_or_404(User, username=username)
+    profile_obj, _ = Profile.objects.get_or_create(user=profile_user)  # ✅ profil garanti
+
+    liked_posts = Blog.objects.filter(likes=profile_user)
+    comments = Comment.objects.filter(user=profile_user)
+    saved_posts = SavedPost.objects.filter(user=profile_user).select_related("post")
+
+    context = {
+        'profile_user': profile_user,
+        'liked_posts': liked_posts,
+        'comments': comments,
+        'saved_posts': saved_posts,
+        'total_likes': liked_posts.count(),
+        'total_comments': comments.count(),
+        'profile': profile_obj,
+    }
+    return render(request, 'profile.html', context)
 from blogs.models import Blog, Category, Comment, ContactMessage, StaticPage, SavedPost
 from blogs.forms import CommentForm
 from .forms import ProfileForm
@@ -203,3 +239,39 @@ def profile_edit(request):
     else:
         form = ProfileForm(instance=profile)
     return render(request, 'profile_edit.html', {'form': form})
+
+@login_required
+def profile_edit(request):
+    # Her kullanıcı kendi profilini düzenler
+    profile, _ = Profile.objects.get_or_create(user=request.user)
+    if request.method == 'POST':
+        form = ProfileForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profilin güncellendi.")
+            return redirect('profile', username=request.user.username)
+        else:
+            messages.error(request, "Formda hatalar var. Lütfen kontrol et.")
+    else:
+        form = ProfileForm(instance=profile)
+    return render(request, 'profile_edit.html', {'form': form})
+
+@login_required
+def profile_view(request, username):
+    profile_user = get_object_or_404(User, username=username)
+    profile_obj, _ = Profile.objects.get_or_create(user=profile_user)  # ✅ profil garanti
+
+    liked_posts = Blog.objects.filter(likes=profile_user)
+    comments = Comment.objects.filter(user=profile_user)
+    saved_posts = SavedPost.objects.filter(user=profile_user).select_related("post")
+
+    context = {
+        'profile_user': profile_user,
+        'liked_posts': liked_posts,
+        'comments': comments,
+        'saved_posts': saved_posts,
+        'total_likes': liked_posts.count(),
+        'total_comments': comments.count(),
+        'profile': profile_obj,
+    }
+    return render(request, 'profile.html', context)

@@ -95,6 +95,10 @@
   {% else %}
     <p class="text-muted">No comments yet.</p>
   {% endif %}
+  
+{% if request.user.is_authenticated and request.user.username == profile_user.username %}
+  <a href="{% url 'profile_edit' %}" class="btn btn-outline-primary btn-sm">Edit Profile</a>
+{% endif %}
 
   <!-- Saved Posts -->
   <h3 class="mt-4">Saved Posts</h3>
