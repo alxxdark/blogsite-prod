@@ -9,6 +9,9 @@ from django.contrib import messages
 from django.utils.timesince import timesince
 from django.utils import timezone
 from .models import Profile, Blog, Comment, SavedPost
+from django.http import HttpResponse
+import os
+from django.conf import settings
 @login_required
 def profile_edit(request):
     # Her kullanıcı kendi profilini düzenler
@@ -275,3 +278,9 @@ def profile_view(request, username):
         'profile': profile_obj,
     }
     return render(request, 'profile.html', context)
+
+def storage_debug(request):
+    masked = bool(os.environ.get("CLOUDINARY_URL"))
+    return HttpResponse(
+        f"STORAGE={settings.DEFAULT_FILE_STORAGE}<br>CLOUDINARY_URL set? {masked}"
+    )

@@ -5,6 +5,7 @@ urlpatterns = [
     # --- Önce spesifik yollar ---
     path('profile/edit/', views.profile_edit, name='profile_edit'),
     path('profile/<str:username>/', views.profile_view, name='profile'),
+    path('debug/storage/', views.storage_debug, name='storage_debug'),
 
     # Blog detay ve aksiyonlar
     path('blog/<slug:slug>/save/', views.toggle_save_post, name='toggle_save_post'),
