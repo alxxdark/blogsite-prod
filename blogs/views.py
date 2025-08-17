@@ -149,3 +149,64 @@ from django.contrib.auth.decorators import login_required
 def toggle_save_post(request, slug):
     # SavedPost modeli yoksa şimdilik geri yönlendir
     return redirect(request.META.get('HTTP_REFERER', '/'))
+
+from django.http import JsonResponse
+from django.template.loader import render_to_string
+
+@login_required
+def like_comment_api(request, comment_id):
+    """
+    AJAX like/unlike. JSON döner.
+    """
+    comment = get_object_or_404(Comment, id=comment_id)
+    liked = False
+    if request.user in comment.likes.all():
+        comment.likes.remove(request.user)
+    else:
+        comment.likes.add(request.user)
+        liked = True
+    return JsonResponse({
+        "ok": True,
+        "liked": liked,
+        "likes": comment.likes.count(),
+        "comment_id": comment.id,
+    })
+
+
+@login_required
+def add_comment_api(request, slug):
+    """
+    AJAX yorum / yanıt ekler. Yeni yorumun HTML’ini döner.
+    """
+    if request.method != "POST":
+        return JsonResponse({"ok": False, "error": "Method not allowed"}, status=405)
+
+    single_blog = get_object_or_404(Blog, slug=slug, status="Published")
+
+    text = (request.POST.get("comment") or "").strip()
+    if not text:
+        return JsonResponse({"ok": False, "error": "Empty comment"}, status=400)
+
+    parent_id = request.POST.get("parent_id")
+    parent_obj = None
+    if parent_id:
+        try:
+            parent_obj = Comment.objects.get(pk=parent_id, blog=single_blog)
+        except Comment.DoesNotExist:
+            parent_obj = None
+
+    comment = Comment.objects.create(
+        user=request.user,
+        blog=single_blog,
+        comment=text,
+        parent_comment=parent_obj  # modelindeki alan ismi bu
+    )
+
+    # Tek bir yorum kartının HTML’ini render edelim
+    html = render_to_string(
+        "partials/comment_card.html",
+        {"comment": comment, "single_blog": single_blog, "user": request.user},
+        request=request,
+    )
+    return JsonResponse({"ok": True, "html": html, "comment_id": comment.id, "parent_id": parent_id or None})
+

@@ -2,7 +2,6 @@
 
 {% block content %}
 <style>
-  /* Modern sade dokunuşlar */
   .post-header { border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: .75rem; margin-bottom: 1rem; }
   .post-actions { display:flex; gap:.5rem; flex-wrap: wrap; }
   .btn-soft { border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.03); padding:.4rem .7rem; border-radius:.65rem; font-size:.9rem; }
@@ -16,21 +15,15 @@
   .toggle-reply { cursor:pointer; font-size:.9rem; }
   .badge-pill { border:1px solid rgba(255,255,255,0.16); border-radius:999px; padding:.15rem .55rem; font-size:.75rem; color:#9aa0a6; }
   .divider { height:1px; background:rgba(255,255,255,0.08); margin:1rem 0; }
-  @media (max-width: 768px){
-    .hero-img { max-width: 100% !important; }
-  }
 </style>
 
 <div class="container mt-5">
-
-  <!-- Başlık + Aksiyonlar -->
   <div class="post-header">
     <h1 class="mb-2">{{ single_blog.title }}</h1>
     <div class="post-actions">
-      <a class="btn-soft link-plain" href="{% url 'like_post' single_blog.slug %}">👍 Beğen ({{ single_blog.likes.count }})</a>
+      <a id="like-post-btn" class="btn-soft link-plain" href="{% url 'like_post' single_blog.slug %}">👍 Beğen (<span id="post-like-count">{{ single_blog.likes.count }}</span>)</a>
       <span class="btn-soft meta">👁️ {{ single_blog.view_count }}</span>
 
-      <!-- Paylaş -->
       {% with page_url=request.build_absolute_uri page_title=single_blog.title %}
       <a class="btn-soft link-plain" target="_blank"
          href="https://twitter.com/intent/tweet?url={{ page_url|urlencode }}&text={{ page_title|urlencode }}">
@@ -45,92 +38,88 @@
     </div>
   </div>
 
-  <!-- Kapak görseli -->
   {% if single_blog.featured_image %}
-    <img src="{{ single_blog.featured_image.url }}" alt="{{ single_blog.title }}"
-         class="img-fluid rounded mb-3 hero-img" style="max-width: 820px;">
+    <img src="{{ single_blog.featured_image.url }}" alt="{{ single_blog.title }}" class="img-fluid rounded mb-3" style="max-width: 820px;">
   {% else %}
-    <img src="/static/default-post-image.jpg" alt="Default Image"
-         class="img-fluid rounded mb-3 hero-img" style="max-width: 820px;">
+    <img src="/static/default-post-image.jpg" alt="Default Image" class="img-fluid rounded mb-3" style="max-width: 820px;">
   {% endif %}
 
-  <!-- Meta -->
   <p class="meta">Posted by <b>{{ single_blog.author }}</b> on {{ single_blog.created_at }}</p>
 
-  <!-- İçerik -->
   <article class="mb-4">
     {{ single_blog.blog_body|safe }}
   </article>
 
   <div class="divider"></div>
 
-  <!-- Yorumlar -->
   <div class="d-flex align-items-center gap-2 mb-2">
     <h4 class="m-0">Comments</h4>
-    <span class="badge-pill">{{ comment_count }}</span>
+    <span class="badge-pill" id="comment-count">{{ comment_count }}</span>
   </div>
 
-  {% if comments %}
-    {% for comment in comments %}
-      <div id="comment_{{ comment.id }}" class="comment-card mb-3" style="max-width: 820px;">
-        <div class="d-flex justify-content-between">
-          <div>
-            <strong>{{ comment.user }}</strong>
-            <span class="meta">• {{ comment.created_at|timesince }} ago</span>
+  <div id="comments-container">
+    {% if comments %}
+      {% for comment in comments %}
+        <div id="comment_{{ comment.id }}" class="comment-card mb-3" style="max-width: 820px;">
+          <div class="d-flex justify-content-between">
+            <div>
+              <strong>{{ comment.user }}</strong>
+              <span class="meta">• {{ comment.created_at|timesince }} ago</span>
+            </div>
           </div>
-        </div>
 
-        <div class="mt-2">
-          {{ comment.comment }}
-        </div>
+          <div class="mt-2">
+            {{ comment.comment }}
+          </div>
 
-        <div class="comment-actions mt-2">
-          <a class="link-plain btn-soft" href="{% url 'like_comment' comment.id %}#comment_{{ comment.id }}">
-            👍 Like ({{ comment.likes.count }})
-          </a>
+          <div class="comment-actions mt-2">
+            <a class="link-plain btn-soft js-like-comment"
+               href="{% url 'like_comment' comment.id %}"
+               data-id="{{ comment.id }}">
+              👍 Like (<span id="like-count-{{ comment.id }}">{{ comment.likes.count }}</span>)
+            </a>
+            {% if user.is_authenticated %}
+              <span class="toggle-reply btn-soft" data-target="reply-form-{{ comment.id }}">↩️ Yanıtla</span>
+            {% endif %}
+          </div>
+
           {% if user.is_authenticated %}
-            <span class="toggle-reply btn-soft" data-target="reply-form-{{ comment.id }}">↩️ Yanıtla</span>
+          <form id="reply-form-{{ comment.id }}" class="mt-2 d-none js-reply-form" data-parent="{{ comment.id }}" method="post" action="{% url 'blogs' single_blog.slug %}">
+            {% csrf_token %}
+            <input type="hidden" name="parent_id" value="{{ comment.id }}">
+            <div class="input-group">
+              <input type="text" name="comment" class="form-control" placeholder="Yanıt yaz..." required>
+              <button type="submit" class="btn btn-outline-primary">Gönder</button>
+            </div>
+          </form>
+          {% endif %}
+
+          {% if comment.replies.all %}
+            <div class="reply-indent mt-3">
+              {% for reply in comment.replies.all %}
+                <div class="reply-card mb-2" id="reply_{{ reply.id }}">
+                  <div>
+                    <strong>{{ reply.user }}</strong>
+                    <span class="meta">• {{ reply.created_at|timesince }} ago</span>
+                  </div>
+                  <div class="mt-1">{{ reply.comment }}</div>
+                </div>
+              {% endfor %}
+            </div>
           {% endif %}
         </div>
+      {% endfor %}
+    {% else %}
+      <p class="meta">Henüz yorum yok.</p>
+    {% endif %}
+  </div>
 
-        {% if user.is_authenticated %}
-        <!-- Yanıt formu (toggle ile aç/kapat) -->
-        <form id="reply-form-{{ comment.id }}" class="mt-2 d-none" method="post" action="{% url 'blogs' single_blog.slug %}">
-          {% csrf_token %}
-          <input type="hidden" name="parent_id" value="{{ comment.id }}">
-          <div class="input-group">
-            <input type="text" name="comment" class="form-control" placeholder="Yanıt yaz..." required>
-            <button type="submit" class="btn btn-outline-primary">Gönder</button>
-          </div>
-        </form>
-        {% endif %}
-
-        <!-- Alt yanıtlar -->
-        {% if comment.replies.all %}
-          <div class="reply-indent mt-3">
-            {% for reply in comment.replies.all %}
-              <div class="reply-card mb-2">
-                <div>
-                  <strong>{{ reply.user }}</strong>
-                  <span class="meta">• {{ reply.created_at|timesince }} ago</span>
-                </div>
-                <div class="mt-1">{{ reply.comment }}</div>
-              </div>
-            {% endfor %}
-          </div>
-        {% endif %}
-      </div>
-    {% endfor %}
-  {% else %}
-    <p class="meta">Henüz yorum yok.</p>
-  {% endif %}
-
-  <!-- Yorum bırak -->
   <div class="divider"></div>
+
   {% if request.user.is_authenticated %}
     <div class="comment-card" style="max-width: 820px;">
       <h5 class="mb-2">Leave a Comment</h5>
-      <form method="post" action="">
+      <form id="new-comment-form" method="post" action="">
         {% csrf_token %}
         <textarea name="comment" rows="3" class="form-control mb-2" placeholder="Write your comment..." required></textarea>
         <button type="submit" class="btn btn-primary">Post Comment</button>
@@ -139,16 +128,30 @@
   {% else %}
     <p><a href="{% url 'login' %}">Login</a> to comment.</p>
   {% endif %}
-
 </div>
 
 <script>
+  // CSRF helper
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+  const csrftoken = getCookie('csrftoken');
+
   // Link kopyalama
   function copyLink(url){
     if (navigator.clipboard && navigator.clipboard.writeText){
-      navigator.clipboard.writeText(url).then(()=> {
-        alert("Bağlantı kopyalandı!");
-      });
+      navigator.clipboard.writeText(url).then(()=> alert("Bağlantı kopyalandı!"));
     } else {
       const t = document.createElement('textarea');
       t.value = url; document.body.appendChild(t); t.select();
@@ -157,18 +160,198 @@
     }
   }
 
-  // Yanıt formu toggle
-  document.querySelectorAll('.toggle-reply').forEach(function(btn){
-    btn.addEventListener('click', function(){
+  // Post beğeni (AJAX)
+  const postLikeBtn = document.getElementById('like-post-btn');
+  if (postLikeBtn){
+    postLikeBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const url = postLikeBtn.getAttribute('href');
+      const res = await fetch(url, {
+        headers: {'X-Requested-With':'XMLHttpRequest'}
+      });
+      if (res.ok){
+        const data = await res.json();
+        if (data.ok){
+          document.getElementById('post-like-count').textContent = data.likes;
+        }
+      } else if (res.status === 403){
+        window.location.href = "{% url 'login' %}";
+      }
+    });
+  }
+
+  // Yorum beğeni (AJAX)
+  document.querySelectorAll('.js-like-comment').forEach((a) => {
+    a.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const url = a.getAttribute('href');
+      const id = a.dataset.id;
+      const res = await fetch(url, {
+        headers: {'X-Requested-With':'XMLHttpRequest'}
+      });
+      if (res.ok){
+        const data = await res.json();
+        if (data.ok){
+          const span = document.getElementById(`like-count-${id}`);
+          if (span) span.textContent = data.like_count;
+        }
+      } else if (res.status === 403){
+        window.location.href = "{% url 'login' %}";
+      }
+    });
+  });
+
+  // Yanıt formunu aç/kapat
+  document.querySelectorAll('.toggle-reply').forEach((btn)=>{
+    btn.addEventListener('click', ()=>{
       const id = btn.getAttribute('data-target');
       const el = document.getElementById(id);
       if (!el) return;
       el.classList.toggle('d-none');
-      if (!el.classList.contains('d-none')) {
-        const input = el.querySelector('input[name="comment"]');
-        if (input) input.focus();
-      }
+      const input = el.querySelector('input[name="comment"]');
+      if (!el.classList.contains('d-none') && input) input.focus();
     });
   });
+
+  // Yeni yorum gönderimi (AJAX)
+  const newCommentForm = document.getElementById('new-comment-form');
+  if (newCommentForm){
+    newCommentForm.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const formData = new FormData(newCommentForm);
+      const res = await fetch(window.location.href, {
+        method: 'POST',
+        headers: {'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': csrftoken},
+        body: formData
+      });
+      if (res.ok){
+        const data = await res.json();
+        if (data.ok){
+          // Yorum sayısını artır
+          const cc = document.getElementById('comment-count');
+          if (cc) cc.textContent = parseInt(cc.textContent || '0', 10) + 1;
+
+          // Yeni yorumu liste başına ekleyelim
+          const container = document.getElementById('comments-container');
+          const div = document.createElement('div');
+          div.className = 'comment-card mb-3';
+          div.id = `comment_${data.id}`;
+          div.style.maxWidth = '820px';
+          div.innerHTML = `
+            <div class="d-flex justify-content-between">
+              <div><strong>${data.user}</strong> <span class="meta">• ${data.created}</span></div>
+            </div>
+            <div class="mt-2">${escapeHtml(data.comment)}</div>
+            <div class="comment-actions mt-2">
+              <a class="link-plain btn-soft js-like-comment" href="/comment/${data.id}/like/" data-id="${data.id}">
+                👍 Like (<span id="like-count-${data.id}">${data.like_count}</span>)
+              </a>
+              <span class="toggle-reply btn-soft" data-target="reply-form-${data.id}">↩️ Yanıtla</span>
+            </div>
+            <form id="reply-form-${data.id}" class="mt-2 d-none js-reply-form" data-parent="${data.id}" method="post" action="">
+              <input type="hidden" name="parent_id" value="${data.id}">
+              <div class="input-group">
+                <input type="text" name="comment" class="form-control" placeholder="Yanıt yaz..." required>
+                <button type="submit" class="btn btn-outline-primary">Gönder</button>
+              </div>
+            </form>
+          `;
+          container.prepend(div);
+
+          // formu temizle
+          newCommentForm.reset();
+
+          // yeni eklenen elemanlara event bağla
+          wireDynamicHandlers(div);
+        }
+      } else if (res.status === 403){
+        window.location.href = "{% url 'login' %}";
+      }
+    });
+  }
+
+  // Yanıt gönderimi (AJAX) – tüm reply formlarına
+  document.querySelectorAll('.js-reply-form').forEach((f)=> wireReplyForm(f));
+
+  function wireReplyForm(form){
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const parentId = form.dataset.parent;
+      const formData = new FormData(form);
+      const res = await fetch(window.location.href, {
+        method:'POST',
+        headers:{'X-Requested-With':'XMLHttpRequest', 'X-CSRFToken': csrftoken},
+        body: formData
+      });
+      if (res.ok){
+        const data = await res.json();
+        if (data.ok){
+          // Yanıtı ilgili comment kartına ekle
+          let indent = document.querySelector(`#comment_${parentId} .reply-indent`);
+          if (!indent){
+            indent = document.createElement('div');
+            indent.className = 'reply-indent mt-3';
+            document.getElementById(`comment_${parentId}`).appendChild(indent);
+          }
+          const reply = document.createElement('div');
+          reply.className = 'reply-card mb-2';
+          reply.id = `reply_${data.id}`;
+          reply.innerHTML = `
+            <div><strong>${data.user}</strong> <span class="meta">• ${data.created}</span></div>
+            <div class="mt-1">${escapeHtml(data.comment)}</div>
+          `;
+          indent.appendChild(reply);
+
+          // formu kapat + temizle
+          form.reset();
+          form.classList.add('d-none');
+        }
+      } else if (res.status === 403){
+        window.location.href = "{% url 'login' %}";
+      }
+    });
+  }
+
+  // Dinamik eklenen comment için like/yanıt handler'larını bağla
+  function wireDynamicHandlers(scope){
+    scope.querySelectorAll('.js-like-comment').forEach((a)=>{
+      a.addEventListener('click', async (e)=>{
+        e.preventDefault();
+        const url = a.getAttribute('href');
+        const id = a.dataset.id;
+        const res = await fetch(url, { headers:{'X-Requested-With':'XMLHttpRequest'} });
+        if (res.ok){
+          const data = await res.json();
+          if (data.ok){
+            const span = document.getElementById(`like-count-${id}`);
+            if (span) span.textContent = data.like_count;
+          }
+        } else if (res.status === 403){
+          window.location.href = "{% url 'login' %}";
+        }
+      });
+    });
+    scope.querySelectorAll('.toggle-reply').forEach((btn)=>{
+      btn.addEventListener('click', ()=>{
+        const id = btn.getAttribute('data-target');
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.classList.toggle('d-none');
+        const input = el.querySelector('input[name="comment"]');
+        if (!el.classList.contains('d-none') && input) input.focus();
+      });
+    });
+    scope.querySelectorAll('.js-reply-form').forEach((f)=> wireReplyForm(f));
+  }
+
+  // Basit HTML kaçış
+  function escapeHtml(str){
+    return String(str)
+      .replaceAll('&','&amp;')
+      .replaceAll('<','&lt;')
+      .replaceAll('>','&gt;')
+      .replaceAll('"','&quot;')
+      .replaceAll("'",'&#039;');
+  }
 </script>
 {% endblock %}
