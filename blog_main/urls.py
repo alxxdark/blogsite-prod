@@ -22,6 +22,9 @@ from django.conf import settings
 from blogs import views as BlogsView
 from django.contrib.auth import views as auth_views
 from django.urls import path, include
+from django.http import HttpResponse
+from django.views.decorators.http import require_http_methods
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -46,3 +49,12 @@ urlpatterns = [
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])
+
+@require_http_methods(["GET","HEAD"])
+def healthz(_):  # hafif ping
+    return HttpResponse("ok", content_type="text/plain")
+
+urlpatterns = [
+    # ...
+    path("healthz/", healthz, name="healthz"),
+]

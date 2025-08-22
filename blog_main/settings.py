@@ -1,4 +1,4 @@
-# settings.py — Render uyumlu (Cloudinary opsiyonel)
+# settings.py — Render uyumlu + Cloudinary (yalnızca MEDIA)
 
 import os
 from pathlib import Path
@@ -22,9 +22,7 @@ ALLOWED_HOSTS = [".onrender.com", "localhost", "127.0.0.1"] + _extra_hosts
 
 SITE_DOMAIN = os.environ.get("SITE_DOMAIN", "https://blogsite-prod.onrender.com").rstrip("/")
 
-CSRF_TRUSTED_ORIGINS = [
-    "https://*.onrender.com",
-]
+CSRF_TRUSTED_ORIGINS = ["https://*.onrender.com"]
 if SITE_DOMAIN.startswith("http"):
     from urllib.parse import urlparse
     _host = urlparse(SITE_DOMAIN).netloc
@@ -48,18 +46,11 @@ INSTALLED_APPS = [
     "crispy_forms",
     "crispy_bootstrap4",
     "whitenoise.runserver_nostatic",
-    # Cloudinary (opsiyonel, sadece env varsa ekle)
-    *(
-        ["cloudinary_storage", "cloudinary"]
-        if os.getenv("CLOUDINARY_URL")
-        else []
-    ),
-
-    # Local apps
-    "assignments",
-    "blogs.apps.BlogsConfig",
-    "dashboards",
 ]
+
+# Cloudinary (opsiyonel) — ENV varsa app’leri ekle
+if os.getenv("CLOUDINARY_URL"):
+    INSTALLED_APPS += ["cloudinary_storage", "cloudinary"]
 
 CRISPY_TEMPLATE_PACK = "bootstrap4"
 
@@ -123,18 +114,20 @@ TIME_ZONE = "Europe/Istanbul"
 USE_I18N = True
 USE_TZ = True
 
-# --- Statik ---
+# --- Statik (WhiteNoise) ---
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "blog_main" / "static"]
-# Cache-busting için manifest storage
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-# --- Medya ---
-# Cloudinary varsa orayı kullan, yoksa local media
-if os.getenv("CLOUDINARY_URL"):
+# --- Medya (Cloudinary varsa orayı kullan, yoksa local) ---
+CLOUDINARY_URL = os.getenv("CLOUDINARY_URL")
+if CLOUDINARY_URL:
+    # Sadece MEDIA Cloudinary'de; STATIC yine WhiteNoise
     DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
-    MEDIA_URL = "/media/"  # yol sembolik; gerçek URL Cloudinary'den gelir
+    MEDIA_URL = "/media/"  # sembolik; gerçek URL Cloudinary tarafında üretilir
+    # (İsteğe bağlı) Cloudinary için güvenli URL tercihleri:
+    CLOUDINARY_SECURE = True
 else:
     MEDIA_URL = "/media/"
     MEDIA_ROOT = BASE_DIR / "media"
