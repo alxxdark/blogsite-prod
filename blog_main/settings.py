@@ -153,7 +153,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # --- Logging (özet) ---
 LOGGING = {
-    "version": 1,
+    "version": 1, 
     "disable_existing_loggers": False,
     "handlers": {"console": {"class": "logging.StreamHandler"}},
     "root": {"handlers": ["console"], "level": "INFO" if not DEBUG else "DEBUG"},

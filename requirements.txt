@@ -10,6 +10,6 @@ crispy-bootstrap4==2024.10
 
 pillow==11.1.0
 python-dotenv==1.0.1
-
+ 
 cloudinary==1.44.1
 django-cloudinary-storage==0.3.0
