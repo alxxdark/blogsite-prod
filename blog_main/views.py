@@ -70,3 +70,6 @@ def create_superuser_view(request):
         User.objects.create_superuser("xxxdarkhite", "sagnak.1903@outlook.com", "Ali.129946")
         return HttpResponse("✅ Süperuser oluşturuldu.")
     return HttpResponse("ℹ️ Zaten var.")
+
+def healthz(request):
+    return HttpResponse("ok", content_type="text/plain")

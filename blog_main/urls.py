@@ -24,6 +24,7 @@ from django.contrib.auth import views as auth_views
 from django.urls import path, include
 from django.http import HttpResponse
 from django.views.decorators.http import require_http_methods
+from .views import healthz
 
 
 urlpatterns = [
@@ -36,6 +37,8 @@ urlpatterns = [
     path("login/",views.login,name="login"),
     path("logout/",views.logout,name="logout"),
     path("create-superuser/", views.create_superuser_view),
+    path("healthz", healthz),  # buraya ekledik
+    path("", include("blogs.urls")),  # mevcut blog app’ini bağlayan kısım
 
     
 
