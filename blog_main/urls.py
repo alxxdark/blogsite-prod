@@ -30,9 +30,7 @@ urlpatterns = [
     # Geçici: superuser oluşturma (prod'da kapatmayı unutma)
     path("create-superuser/", views.create_superuser_view),
 
-    # Healthcheck
-    path("healthz", healthz),
-
+    
     # Dashboards
     path("dashboard/", include("dashboards.urls")),
 
