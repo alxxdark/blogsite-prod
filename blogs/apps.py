@@ -1,8 +1,8 @@
 from django.apps import AppConfig
 
 class BlogsConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'blogs'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "blogs"
 
     def ready(self):
-        from. import signals  # sinyalleri tek yerden yükle
+        from . import signals  # ✅ nokta ile
