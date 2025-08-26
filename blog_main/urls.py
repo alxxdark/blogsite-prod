@@ -9,7 +9,7 @@ from django.conf import settings
 from . import views
 from blogs import views as BlogsView
 from django.contrib.auth import views as auth_views
-from .health import healthz  # healthz artık ayrı dosyada, app'lere dokunmaz
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
