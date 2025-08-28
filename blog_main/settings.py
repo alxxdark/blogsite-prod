@@ -41,9 +41,10 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+
+    # Proje
     "blogs.apps.BlogsConfig",
     "assignments.apps.AssignmentsConfig",
-
 
     # 3rd party
     "crispy_forms",
@@ -120,8 +121,16 @@ USE_TZ = True
 # --- Statik (WhiteNoise) ---
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_DIRS = [BASE_DIR / "blog_main" / "static"]
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+# STATICFILES_DIRS varsa ekle (yoksa hata vermesin)
+_static_dir = BASE_DIR / "blog_main" / "static"
+STATICFILES_DIRS = [_static_dir] if _static_dir.exists() else []
+
+# DEBUG/PROD'a göre güvenli storage seçimi
+if DEBUG:
+    STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
+else:
+    STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # --- Medya (Cloudinary varsa orayı kullan, yoksa local) ---
 CLOUDINARY_URL = os.getenv("CLOUDINARY_URL")
@@ -156,7 +165,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # --- Logging (özet) ---
 LOGGING = {
-    "version": 1, 
+    "version": 1,
     "disable_existing_loggers": False,
     "handlers": {"console": {"class": "logging.StreamHandler"}},
     "root": {"handlers": ["console"], "level": "INFO" if not DEBUG else "DEBUG"},

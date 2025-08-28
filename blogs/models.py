@@ -5,12 +5,13 @@ from django.utils.text import slugify
 
 
 class Category(models.Model):
-    category_name = models.CharField(max_length=50, unique=True)
+    category_name = models.CharField(max_length=50, unique=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name_plural = "categories"
+        ordering = ["category_name"]
 
     def __str__(self):
         return self.category_name
@@ -18,30 +19,44 @@ class Category(models.Model):
 
 STATUS_CHOICES = (
     ("Draft", "Draft"),
-    ("Published", "Published")
+    ("Published", "Published"),
 )
 
 
 class Blog(models.Model):
-    title = models.CharField(max_length=100)
+    title = models.CharField(max_length=100, db_index=True)
     slug = models.SlugField(max_length=100, unique=True, blank=True)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
-    featured_image = models.ImageField(upload_to="uploads/%Y/%m/%d")
-    short_description = models.TextField(max_length=500)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="blogs")
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="blogs")
+    featured_image = models.ImageField(upload_to="uploads/%Y/%m/%d", blank=True, null=True)
+    short_description = models.TextField(max_length=500, blank=True)
     blog_body = models.TextField(max_length=2000)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="Draft")
-    is_featured = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="Draft", db_index=True)
+    is_featured = models.BooleanField(default=False, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
-    likes = models.ManyToManyField(User, related_name='liked_posts', blank=True)
-    view_count = models.IntegerField(default=0)
+    likes = models.ManyToManyField(User, related_name="liked_posts", blank=True)
+    view_count = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["-updated_at"]
+        indexes = [
+            models.Index(fields=["status", "updated_at"]),
+            models.Index(fields=["is_featured", "updated_at"]),
+            models.Index(fields=["slug"]),
+        ]
 
     def __str__(self):
         return self.title
 
     def get_absolute_url(self):
-        return reverse('blogs', kwargs={'slug': self.slug})
+        # blogs/urls.py: path("<slug:slug>/", views.blogs, name="blogs")
+        return reverse("blogs", kwargs={"slug": self.slug})
+
+    @property
+    def description(self):
+        # home.html'de |default:post.description için güvenli alias
+        return self.blog_body
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -57,27 +72,30 @@ class Blog(models.Model):
 
 class Comment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    blog = models.ForeignKey(Blog, on_delete=models.CASCADE, related_name='comments')
+    blog = models.ForeignKey(Blog, on_delete=models.CASCADE, related_name="comments")
     comment = models.TextField(max_length=250)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
     parent_comment = models.ForeignKey(
-        'self', on_delete=models.CASCADE, null=True, blank=True, related_name='replies'
+        "self", on_delete=models.CASCADE, null=True, blank=True, related_name="replies"
     )
-    likes = models.ManyToManyField(User, related_name='comment_likes', blank=True)
+    likes = models.ManyToManyField(User, related_name="comment_likes", blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
 
     def total_likes(self):
         return self.likes.count()
 
     def __str__(self):
-        return self.comment
+        return self.comment[:40]
 
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     bio = models.TextField(blank=True)
-    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
-    cover = models.ImageField(upload_to='covers/', blank=True, null=True)  # ✅ yeni
+    avatar = models.ImageField(upload_to="avatars/", blank=True, null=True)
+    cover = models.ImageField(upload_to="covers/", blank=True, null=True)
 
     def __str__(self):
         return f"{self.user.username} Profile"
@@ -89,6 +107,9 @@ class ContactMessage(models.Model):
     message = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ["-created_at"]
+
     def __str__(self):
         return f"{self.name} ({self.email})"
 
@@ -99,19 +120,22 @@ class StaticPage(models.Model):
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ["title"]
+
     def __str__(self):
         return self.title
 
 
-# ---- YENİ: Kaydet/Favori ----
+# ---- Kaydet/Favori ----
 class SavedPost(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='saved_posts')
-    post = models.ForeignKey(Blog, on_delete=models.CASCADE, related_name='saved_by')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="saved_posts")
+    post = models.ForeignKey(Blog, on_delete=models.CASCADE, related_name="saved_by")
     saved_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('user', 'post')  # bir postu iki kez kaydetmesin
-        ordering = ['-saved_at']
+        unique_together = ("user", "post")
+        ordering = ["-saved_at"]
 
     def __str__(self):
         return f"{self.user.username} saved {self.post.title}"

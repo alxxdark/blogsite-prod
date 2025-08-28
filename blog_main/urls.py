@@ -12,6 +12,10 @@ from django.contrib.auth import views as auth_views
 urlpatterns = [
     path("admin/", admin.site.urls),
 
+    # Health checks (Render için)
+    path("healthz", views.healthz, name="healthz"),
+    path("_home_smoke", views.home_smoke, name="home_smoke"),
+
     # Ana sayfa
     path("", views.home, name="home"),
 
@@ -23,7 +27,7 @@ urlpatterns = [
     path("login/", views.login, name="login"),
     path("logout/", views.logout, name="logout"),
 
-    # Geçici: superuser (prod’da kapat)
+    # Geçici: superuser (PROD'DA KAPAT!)
     path("create-superuser/", views.create_superuser_view),
 
     # Dashboard
