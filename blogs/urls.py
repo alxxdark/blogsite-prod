@@ -15,5 +15,5 @@ urlpatterns = [
     path("page/<slug:slug>/", views.static_page, name="static_page"),
 
     # >>> EN SON: tek segmentli slug detayı <<<
-    path("<slug:slug>/", views.blogs, name="blogs"),
+    path("<slug:slug>/", views.blogs, name="blogs"),  
 ]

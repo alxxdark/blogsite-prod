@@ -1,9 +1,10 @@
-# settings.py — Render uyumlu + Cloudinary (yalnızca MEDIA)
+# settings.py — Render + Postgres (Supabase/Neon) + Cloudinary (MEDIA) uyumlu
 
 import os
 from pathlib import Path
 import dj_database_url
 from dotenv import load_dotenv
+from urllib.parse import urlparse
 
 load_dotenv()
 
@@ -16,15 +17,18 @@ SECRET_KEY = os.environ.get(
 )
 DEBUG = os.environ.get("DEBUG", "True") == "True"
 
-# Render domain(ler)i
+# Render domain(ler)i + isteğe bağlı özel domain
 _extra_hosts = [h for h in os.environ.get("ALLOWED_HOSTS", "").split(",") if h]
 ALLOWED_HOSTS = [".onrender.com", "localhost", "127.0.0.1"] + _extra_hosts
 
-SITE_DOMAIN = os.environ.get("SITE_DOMAIN", "https://blogsite-prod.onrender.com").rstrip("/")
+# CSRF: wildcard kullanma; tam hostları ekle
+CSRF_TRUSTED_ORIGINS = []
+_render_host = os.environ.get("RENDER_EXTERNAL_HOSTNAME", "").strip()
+if _render_host:
+    CSRF_TRUSTED_ORIGINS.append(f"https://{_render_host}")
 
-CSRF_TRUSTED_ORIGINS = ["https://*.onrender.com"]
+SITE_DOMAIN = os.environ.get("SITE_DOMAIN", "").strip().rstrip("/")
 if SITE_DOMAIN.startswith("http"):
-    from urllib.parse import urlparse
     _host = urlparse(SITE_DOMAIN).netloc
     if _host:
         CSRF_TRUSTED_ORIGINS.append(f"https://{_host}")
@@ -52,9 +56,9 @@ INSTALLED_APPS = [
     "whitenoise.runserver_nostatic",
 ]
 
-# Cloudinary (opsiyonel) — ENV varsa app’leri ekle
+# Cloudinary ENV varsa app’leri ekle (sırası: cloudinary, cloudinary_storage)
 if os.getenv("CLOUDINARY_URL"):
-    INSTALLED_APPS += ["cloudinary_storage", "cloudinary"]
+    INSTALLED_APPS += ["cloudinary", "cloudinary_storage"]
 
 CRISPY_TEMPLATE_PACK = "bootstrap4"
 
@@ -91,11 +95,25 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "blog_main.wsgi.application"
 
-# --- Veritabanı ---
-if os.environ.get("DATABASE_URL"):
-    DATABASES = {
-        "default": dj_database_url.config(conn_max_age=600, ssl_require=True)
-    }
+# --- Veritabanı (Supabase/Neon veya fallback SQLite) ---
+DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
+DB_POOLED = os.environ.get("DB_POOLED", "").strip().lower() in {"1", "true", "yes"}
+
+if DATABASE_URL:
+    # Pooled endpoint (Supabase 6543 veya Neon -pooler) için conn_max_age=0 + server-side cursor kapalı
+    conn_max_age = 0 if DB_POOLED else 600
+    db_cfg = dj_database_url.parse(
+        DATABASE_URL,
+        conn_max_age=conn_max_age,
+        ssl_require=True
+    )
+    db_cfg.setdefault("OPTIONS", {})
+    db_cfg["OPTIONS"]["sslmode"] = "require"
+    DATABASES = {"default": db_cfg}
+
+    if DB_POOLED:
+        # Pgbouncer uyumu
+        DISABLE_SERVER_SIDE_CURSORS = True
 else:
     DATABASES = {
         "default": {
@@ -121,37 +139,38 @@ USE_TZ = True
 # --- Statik (WhiteNoise) ---
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-
-# STATICFILES_DIRS varsa ekle (yoksa hata vermesin)
 _static_dir = BASE_DIR / "blog_main" / "static"
 STATICFILES_DIRS = [_static_dir] if _static_dir.exists() else []
 
-# DEBUG/PROD'a göre güvenli storage seçimi
+# Django 5+ STORAGES (STATIC + MEDIA)
 if DEBUG:
-    STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
+    _static_backend = "whitenoise.storage.CompressedStaticFilesStorage"
 else:
-    STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+    _static_backend = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-# --- Medya (Cloudinary varsa orayı kullan, yoksa local) ---
 CLOUDINARY_URL = os.getenv("CLOUDINARY_URL")
+
 if CLOUDINARY_URL:
-    # Sadece MEDIA Cloudinary'de; STATIC yine WhiteNoise
     DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
-    MEDIA_URL = "/media/"  # sembolik; gerçek URL Cloudinary tarafında üretilir
-    # (İsteğe bağlı) Cloudinary için güvenli URL tercihleri:
+    MEDIA_URL = "/media/"      # sembolik; gerçek URL Cloudinary tarafında
     CLOUDINARY_SECURE = True
 else:
+    DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
     MEDIA_URL = "/media/"
     MEDIA_ROOT = BASE_DIR / "media"
 
-# --- Email ---
+STORAGES = {
+    "staticfiles": {"BACKEND": _static_backend},
+    "default": {"BACKEND": DEFAULT_FILE_STORAGE},
+}
+
+# --- Email (opsiyonel ENV'lerle) ---
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = os.environ.get("EMAIL_HOST")
 EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 587))
 EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True") == "True"
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
-
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER or "")
 SERVER_EMAIL = os.environ.get("SERVER_EMAIL", EMAIL_HOST_USER or "")
 EMAIL_SUBJECT_PREFIX = "[Blogsite] "
