@@ -5,8 +5,7 @@ from pathlib import Path
 import dj_database_url
 from dotenv import load_dotenv
 from urllib.parse import urlparse
-from django.contrib.auth import get_user_model
-from django.db.utils import OperationalError
+
 
 load_dotenv()
 
@@ -193,17 +192,3 @@ LOGGING = {
 }
 
 
-try:
-    User = get_user_model()
-    if not User.objects.filter(username="admin").exists():
-        User.objects.create_superuser(
-            username="superadmin",
-            email="sagnak.1903@outlook.com",
-            password="Ali.129946"
-        )
-        print(">> Superuser oluşturuldu ✅")
-    else:
-        print(">> Admin zaten var ❗")
-except OperationalError:
-    # DB migrate edilmemişse hata verme
-    pass
