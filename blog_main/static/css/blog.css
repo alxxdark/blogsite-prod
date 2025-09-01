@@ -305,3 +305,68 @@ h3.text-uppercase.text-warning,
     animation: pulse-blue 2s infinite;
     transition: all 0.3s ease-in-out;
 }
+
+
+/* === HEADER DÜZELTMESİ === */
+.header, .site-header, .navbar {        /* senin header class'ın neyse buraya uyabilir */
+  display: flex;
+  align-items: center;                   /* dikey hizalama */
+  gap: 12px;
+  padding: 8px 16px;                     /* üstte boşluğu net belirle */
+}
+
+/* Logo ve menü ikonu: varsayılan satır içi boşluklarını temizle */
+.header img.logo, .brand-logo {
+  display: block;                        /* baseline boşluğunu kaldırır */
+  height: 44px;                          /* ihtiyaca göre */
+  width: auto;
+  margin: 0; padding: 0;
+}
+.menu-toggle, .hamburger {
+  margin: 0; padding: 8px;               /* üst boşluk olmasın */
+  line-height: 1;
+}
+
+/* Eğer header içinde h1/h2 varsa ve yukarı itiyorsa: */
+.header h1, .header h2 {
+  margin: 0;
+  line-height: 1.2;
+}
+
+/* === LİSTE / KART RENKLERİ (deneme-1 görünürlüğü) === */
+/* Tüm kart/metinleri koyu temaya uyumlu yap */
+.post-card, .article-card, .post-list li {
+  color: #e8edff;
+}
+
+/* Başlık ve link renkleri */
+.post-title, .post-title a,
+.article-card .title a,
+.post-list a {
+  color: #27d3ff;                        /* tema turkuazın; istersen #19d3e6 */
+  text-decoration: none;
+}
+.post-title a:hover,
+.article-card .title a:hover,
+.post-list a:hover {
+  color: #8fe8ff;
+}
+
+/* Meta/alt yazılar (tarih, yazar vs.) */
+.post-meta, .post-meta a, .excerpt, .subtitle {
+  color: #9aa7c7;
+}
+
+/* Genel link varsayılanı koyu temaya uygun olsun (site geneli) */
+a { color: #27d3ff; }
+a:hover { color: #8fe8ff; }
+
+/* Eğer linkler “visited” olduğunda kararıyorsa: */
+a:visited { color: #27d3ff; }
+
+/* Kart arka planları çok koyuysa hafif parlaklık: */
+.post-card, .article-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid #1b2540;
+  border-radius: 12px;
+}
