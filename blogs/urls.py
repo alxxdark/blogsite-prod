@@ -17,3 +17,4 @@ urlpatterns = [
     # >>> EN SON: tek segmentli slug detayı <<<
     path("<slug:slug>/", views.blogs, name="blogs"),  
 ]
+

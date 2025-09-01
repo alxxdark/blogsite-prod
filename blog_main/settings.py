@@ -46,10 +46,12 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.sitemaps"
 
     # Proje
     "blogs.apps.BlogsConfig",
     "assignments.apps.AssignmentsConfig",
+    
 
     # 3rd party
     "crispy_forms",
@@ -192,3 +194,16 @@ LOGGING = {
 }
 
 
+# --- Security / Prod hardening ---
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
+SECURE_HSTS_SECONDS = 31536000  # 1 yıl
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+
+# Django'nun prod check'i
+SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
+SECURE_BROWSER_XSS_FILTER = True  
+X_FRAME_OPTIONS = "DENY"

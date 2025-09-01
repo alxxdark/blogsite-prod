@@ -1,9 +1,19 @@
 from django.contrib import admin
 from django.urls import include, path
-from django.conf.urls.static import static
 from django.conf import settings
-from . import views
+from django.conf.urls.static import static
+from django.views.generic import TemplateView
 from django.contrib.auth import views as auth_views
+
+from . import views
+
+# Sitemaps
+from django.contrib.sitemaps.views import sitemap
+from blogs.sitemaps import BlogSitemap
+
+sitemaps = {
+    "blogs": BlogSitemap,
+}
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -15,13 +25,13 @@ urlpatterns = [
     # Ana sayfa
     path("", views.home, name="home"),
 
+    # Sitemap
+    path("sitemap.xml", sitemap, {"sitemaps": sitemaps}, name="sitemap"),
+
     # Auth
     path("register/", views.register, name="register"),
     path("login/", views.login, name="login"),
     path("logout/", views.logout, name="logout"),
-
-    # Geçici: superuser (PROD'DA KAPAT!)
-    path("create-superuser/", views.create_superuser_view),
 
     # Dashboard
     path("dashboard/", include("dashboards.urls")),
@@ -32,12 +42,28 @@ urlpatterns = [
     path("reset/<uidb64>/<token>/", auth_views.PasswordResetConfirmView.as_view(), name="password_reset_confirm"),
     path("reset/done/", auth_views.PasswordResetCompleteView.as_view(), name="password_reset_complete"),
 
-    # >>> BLOG URL’LERİNİ EN ALTA AL <<<
-    path("", include("blogs.urls")),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    # robots.txt
+    path(
+        "robots.txt",
+        TemplateView.as_view(template_name="robots.txt", content_type="text/plain"),
+    ),
 
+    # Blog app rotaları
+    path("", include("blogs.urls")),
+]
+
+# DEBUG ortamında statik/medya servis et
 if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     if getattr(settings, "STATICFILES_DIRS", None):
         urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])
     elif getattr(settings, "STATIC_ROOT", None):
         urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+# Geçici superuser endpointini sadece DEBUG'ta açık tut
+if settings.DEBUG:
+    urlpatterns += [path("create-superuser/", views.create_superuser_view)]
+
+# Özel hata sayfaları
+handler404 = "django.views.defaults.page_not_found"
+handler500 = "django.views.defaults.server_error"
