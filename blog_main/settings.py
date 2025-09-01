@@ -46,12 +46,11 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "django.contrib.sitemaps"
+    "django.contrib.sitemaps",   # ← BURADA VİRGÜL VAR!
 
     # Proje
     "blogs.apps.BlogsConfig",
     "assignments.apps.AssignmentsConfig",
-    
 
     # 3rd party
     "crispy_forms",
@@ -59,7 +58,7 @@ INSTALLED_APPS = [
     "whitenoise.runserver_nostatic",
 ]
 
-# Cloudinary ENV varsa app’leri ekle (sırası: cloudinary, cloudinary_storage)
+# Cloudinary ENV varsa app’leri ekle (sırası önemli değil)
 if os.getenv("CLOUDINARY_URL"):
     INSTALLED_APPS += ["cloudinary", "cloudinary_storage"]
 
