@@ -5,19 +5,39 @@
   <title>Bir şeyler ters gitti • 500</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
-    body{font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif;margin:0;display:grid;place-items:center;min-height:100vh;background:#1a0e1e;color:#ffeefb}
-    .card{max-width:560px;padding:28px;border:1px solid #402047; border-radius:16px; background:rgba(255,255,255,0.04); box-shadow:0 10px 30px rgba(0,0,0,.25)}
-    h1{font-size:28px;margin:0 0 8px}
-    p{opacity:.9;line-height:1.6}
-    a.btn{display:inline-block;margin-top:14px;padding:10px 16px;border-radius:10px;text-decoration:none;border:1px solid #ff71b3}
-    a.btn:hover{background:#ff71b3;color:#1a0e1e}
+    :root{
+      --bg:#160e1a; --fg:#ffeff8; --accent:#ff71b3; --muted:#ffd1e8; --card:rgba(255,255,255,.04); --bd:#3b1f44;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; display:grid; place-items:center; min-height:100%;
+      background:radial-gradient(1100px 700px at 20% -10%, #28132f 0%, #160e1a 55%, #100914 100%);
+      color:var(--fg); font:16px/1.6 system-ui, Segoe UI, Roboto, Arial, sans-serif;
+    }
+    .wrap{max-width:720px; padding:28px; text-align:center; border:1px solid var(--bd);
+      border-radius:18px; background:var(--card); box-shadow:0 20px 60px rgba(0,0,0,.35)}
+    h1{font-size:28px; margin:0 0 8px}
+    .msg{opacity:.9; color:var(--muted); margin:4px 0 16px}
+    .btn{
+      appearance:none; border:1px solid var(--accent); background:transparent; color:var(--fg);
+      padding:10px 16px; border-radius:10px; text-decoration:none; cursor:pointer;
+      transition:transform .12s ease, background .2s ease, color .2s ease;
+    }
+    .btn:hover{background:var(--accent); color:#160e1a; transform:translateY(-1px)}
+    .small{font-size:13px; opacity:.75; margin-top:10px}
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>500 — Sunucuda küçük bir aksaklık</h1>
-    <p>Merak etme, kayıt altına aldık. Birazdan tekrar dene ya da ana sayfaya dön.</p>
-    <a class="btn" href="/">Ana sayfaya dön</a>
-  </div>
+  <main class="wrap" role="main" aria-labelledby="t">
+    <h1 id="t">500 — Sunucuda küçük bir aksaklık</h1>
+    <p class="msg">Sorunu kaydettik. Birazdan tekrar dene ya da ana sayfaya dön.</p>
+
+    <div class="actions" style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap">
+      <a class="btn" href="/">Ana sayfa</a>
+      <a class="btn" href="mailto:sagnak.1903@outlook.com">Sorunu bildir</a>
+    </div>
+    <p class="small">Eğer bu hatayı sık görüyorsan lütfen bize yaz.</p>
+  </main>
 </body>
 </html>
