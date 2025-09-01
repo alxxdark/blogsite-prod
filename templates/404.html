@@ -35,12 +35,30 @@
       80%{clip-path:inset(0 0 80% 0)} 100%{clip-path:inset(0 0 0 0)}
     }
     .msg{font-size:18px; color:var(--muted); margin:6px 0 18px}
+
     .panel{position:relative; margin:18px auto 6px; width:min(360px,90vw); aspect-ratio:4/3;
       border:6px solid var(--accent); border-radius:16px; background:#0e1326;
       box-shadow:0 0 24px rgba(255,77,109,.25) inset, 0 10px 40px rgba(0,0,0,.35);
       display:grid; place-items:center;
     }
-    .crack svg{width:76%; opacity:.28; filter:drop-shadow(0 0 6px #ff4d6d)}
+
+    /* ROBOT görseli */
+    .robot svg{width:82%}
+    .antenna{animation:pulse 1.8s ease-in-out infinite; filter:drop-shadow(0 0 6px rgba(255,77,109,.6))}
+    @keyframes pulse{0%,100%{opacity:.55}50%{opacity:1}}
+
+    .eye{transform-origin:50% 50%; animation:blink 5s infinite}
+    .eye.r{animation-delay:.25s}
+    @keyframes blink{
+      0%,6%,8%,100%{transform:scaleY(1)}
+      7%{transform:scaleY(.1)}
+      48%,54%,56%{transform:scaleY(1)}
+      55%{transform:scaleY(.1)}
+    }
+
+    .mouth{stroke-dasharray:4 6; animation:dash 2.2s linear infinite}
+    @keyframes dash{to{stroke-dashoffset:-100}}
+
     .actions{margin-top:16px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap}
     .btn{
       appearance:none; border:1px solid #3f4fff; background:transparent; color:var(--fg);
@@ -49,9 +67,7 @@
     }
     .btn:hover{background:#3f4fff; color:#fff; transform:translateY(-1px)}
     .small{font-size:13px; opacity:.7; margin-top:8px}
-    @media (max-width:480px){
-      .code{font-size:68px}
-    }
+    @media (max-width:480px){ .code{font-size:68px} }
   </style>
 </head>
 <body>
@@ -60,11 +76,33 @@
     <p class="msg">Aradığın sayfayı bulamadık. Link eskimiş ya da yanlış olabilir.</p>
 
     <div class="panel" aria-hidden="true">
-      <div class="crack">
-        <!-- Inline SVG -->
-        <svg viewBox="0 0 200 150" fill="none" stroke="#ff4d6d" stroke-width="3">
-          <path d="M10 80 L60 70 L80 30 L100 70 L140 55 L155 95 L190 85" />
-          <path d="M80 30 L90 20 M100 70 L115 48 M140 55 L150 40" />
+      <div class="robot">
+        <!-- Inline SVG: Robot kafa -->
+        <svg viewBox="0 0 200 150" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <!-- Anten -->
+          <g class="antenna" stroke="#ff4d6d" stroke-width="3">
+            <line x1="100" y1="18" x2="100" y2="32"/>
+            <circle cx="100" cy="14" r="4" fill="#ff4d6d"/>
+          </g>
+
+          <!-- Kafa gövde -->
+          <rect x="50" y="40" width="100" height="70" rx="12" stroke="#e8edff" stroke-width="2.5" fill="rgba(255,255,255,0.02)"/>
+          <!-- Kulaklar -->
+          <rect x="40" y="56" width="8" height="38" rx="4" stroke="#e8edff" stroke-width="2"/>
+          <rect x="152" y="56" width="8" height="38" rx="4" stroke="#e8edff" stroke-width="2"/>
+
+          <!-- Gözler -->
+          <g class="eyes" stroke-width="4" stroke="#7aa2ff">
+            <rect class="eye l" x="68" y="66" width="18" height="10" rx="3" fill="#7aa2ff"/>
+            <rect class="eye r" x="114" y="66" width="18" height="10" rx="3" fill="#7aa2ff"/>
+          </g>
+
+          <!-- Ağız (hata tarzı çizgiler) -->
+          <path class="mouth" d="M70 92 L82 88 L94 94 L106 86 L118 92 L130 88" stroke="#ff4d6d" stroke-width="2.5"/>
+
+          <!-- Gövde etiketi -->
+          <rect x="78" y="48" width="44" height="12" rx="3" fill="rgba(122,162,255,.15)" stroke="#7aa2ff" stroke-width="1.5"/>
+          <text x="100" y="57" text-anchor="middle" font-size="8" fill="#7aa2ff" style="letter-spacing:1px">ERR_404</text>
         </svg>
       </div>
     </div>
