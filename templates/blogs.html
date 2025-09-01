@@ -40,18 +40,7 @@
       <!-- Görüntüleme -->
       <span class="btn-soft meta">👁️ {{ single_blog.view_count }}</span>
 
-      <!-- Paylaş -->
-      {% with page_url=request.build_absolute_uri page_title=single_blog.title %}
-      <a class="btn-soft link-plain" target="_blank"
-         href="https://twitter.com/intent/tweet?url={{ page_url|urlencode }}&text={{ page_title|urlencode }}">
-        ↗️ X (Twitter)
-      </a>
-      <a class="btn-soft link-plain" target="_blank"
-         href="https://wa.me/?text={{ page_title|urlencode }}%20-%20{{ page_url|urlencode }}">
-        ↗️ WhatsApp
-      </a>
-      <button class="btn-soft" type="button" onclick="copyLink('{{ page_url|escapejs }}')">🔗 Kopyala</button>
-      {% endwith %}
+      
     </div>
   </div>
 
