@@ -40,7 +40,10 @@
       <!-- Görüntüleme -->
       <span class="btn-soft meta">👁️ {{ single_blog.view_count }}</span>
 
-      
+      <!-- Paylaş -->
+      {% with page_url=request.build_absolute_uri page_title=single_blog.title %}
+      <button class="btn-soft" type="button" onclick="copyLink('{{ page_url|escapejs }}')">🔗 Kopyala</button>
+      {% endwith %}
     </div>
   </div>
 
