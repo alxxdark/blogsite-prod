@@ -5,8 +5,8 @@ from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.conf import settings
 
-from .models import Profile, Blog
-
+from .models import Profile, Blog, Comment, CommentStatus
+from .ml import analyze_text  # <<< ML analiz fonksiyonumuz
 
 def full_url(path: str) -> str:
     return f"{settings.SITE_DOMAIN.rstrip('/')}{path}"
@@ -29,7 +29,8 @@ def create_or_update_user_profile(sender, instance, created, **kwargs):
 # --- BLOG YAYINLANDIĞINDA E-POSTA ---
 @receiver(post_save, sender=Blog)
 def notify_users_on_new_post(sender, instance, created, **kwargs):
-    if not created:
+    # Sadece yeni oluşturulmuş ve Published ise mail at (Draft'ta atmasın)
+    if not created or getattr(instance, "status", "") != "Published":
         return
 
     post_url = full_url(instance.get_absolute_url())
@@ -59,6 +60,24 @@ def notify_users_on_new_post(sender, instance, created, **kwargs):
             print("[MAIL DEBUG] send_mail OK")
         except Exception as e:
             print("[MAIL ERROR]", repr(e))
+
+
+# --- YORUM KAYDEDİLİNCE OTOMATİK ML MODERASYON ---
+@receiver(post_save, sender=Comment)
+def auto_moderate_comment(sender, instance: Comment, created, **kwargs):
+    # Sadece yeni yaratıldığında değerlendir
+    if not created:
+        return
+
+    result = analyze_text(instance.comment or "")
+    instance.toxicity = result["toxicity"]
+    instance.sentiment = result["sentiment"]
+    instance.is_spam = result["is_spam"]
+    instance.reason = result["reason"]
+    instance.status = getattr(CommentStatus, result["decision"], CommentStatus.PENDING)
+
+    # Sinyali yeniden tetiklememek için alan bazlı kayıt
+    instance.save(update_fields=["toxicity", "sentiment", "is_spam", "reason", "status"])
 
 
 # --- PROD İÇİN TEK SEFERLİK SUPERUSER OLUŞTURMA (ENV bayraklı) ---

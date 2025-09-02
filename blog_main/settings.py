@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "django.contrib.sitemaps",   # ← BURADA VİRGÜL VAR!
+    "django.contrib.sitemaps",  
 
     # Proje
     "blogs.apps.BlogsConfig",

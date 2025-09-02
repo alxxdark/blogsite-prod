@@ -1,0 +1,44 @@
+{% load static %}
+<div class="my-3">
+  <h5 class="text-uppercase text-warning" style="letter-spacing:1px;">
+    Yorumlar <span class="ms-2">🤖 yapay zekâ ile destekleniyor</span>
+  </h5>
+
+  {% for c in comments %}
+    <div class="border rounded p-2 mb-2 bg-light">
+      <strong>{{ c.user.username }}</strong>
+      <small class="text-muted">• {{ c.created_at|date:"d M Y H:i" }}</small>
+      <p class="mb-1">{{ c.comment|linebreaksbr }}</p>
+
+      {% if request.user.is_superuser %}
+        <div class="small text-muted">
+          durum: {{ c.status }} • tox: {{ c.toxicity }} • sent: {{ c.sentiment }} • spam: {{ c.is_spam }} • {{ c.reason }}
+        </div>
+      {% endif %}
+
+      {# cevaplar (varsa) #}
+      {% for r in c.replies.all %}
+        {% if r.is_visible %}
+          <div class="ms-3 border-start ps-2 my-1">
+            <strong>{{ r.user.username }}</strong>
+            <small class="text-muted">• {{ r.created_at|date:"d M Y H:i" }}</small>
+            <p class="mb-1">{{ r.comment|linebreaksbr }}</p>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  {% empty %}
+    <p class="text-muted">Henüz yorum yok. İlk yorumu sen yaz.</p>
+  {% endfor %}
+
+  {% if request.user.is_authenticated %}
+    <form action="{% url 'blogs:comment_add' post.id %}" method="post" class="mt-3">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+      <div class="mb-2">{{ form.comment }}</div>
+      <button class="btn btn-sm btn-primary">Gönder</button>
+    </form>
+  {% else %}
+    <p class="text-muted">Yorum yazmak için giriş yap.</p>
+  {% endif %}
+</div>

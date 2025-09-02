@@ -1,9 +1,11 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.conf import settings
 from django.urls import reverse
 from django.utils.text import slugify
 
-
+# -------------------------------------------------------------------
+# Category
+# -------------------------------------------------------------------
 class Category(models.Model):
     category_name = models.CharField(max_length=50, unique=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -22,12 +24,14 @@ STATUS_CHOICES = (
     ("Published", "Published"),
 )
 
-
+# -------------------------------------------------------------------
+# Blog
+# -------------------------------------------------------------------
 class Blog(models.Model):
     title = models.CharField(max_length=100, db_index=True)
     slug = models.SlugField(max_length=100, unique=True, blank=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="blogs")
-    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="blogs")
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="blogs")
     featured_image = models.ImageField(upload_to="uploads/%Y/%m/%d", blank=True, null=True)
     short_description = models.TextField(max_length=500, blank=True)
     blog_body = models.TextField(max_length=2000)
@@ -35,7 +39,7 @@ class Blog(models.Model):
     is_featured = models.BooleanField(default=False, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
-    likes = models.ManyToManyField(User, related_name="liked_posts", blank=True)
+    likes = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name="liked_posts", blank=True)
     view_count = models.PositiveIntegerField(default=0)
 
     class Meta:
@@ -55,7 +59,6 @@ class Blog(models.Model):
 
     @property
     def description(self):
-        # home.html'de |default:post.description için güvenli alias
         return self.blog_body
 
     def save(self, *args, **kwargs):
@@ -70,37 +73,77 @@ class Blog(models.Model):
         super().save(*args, **kwargs)
 
 
+# -------------------------------------------------------------------
+# Yorum Moderasyon Statüsü
+# -------------------------------------------------------------------
+class CommentStatus(models.TextChoices):
+    PENDING = "PENDING", "Pending"
+    APPROVED = "APPROVED", "Approved"
+    REJECTED = "REJECTED", "Rejected"
+
+
+# -------------------------------------------------------------------
+# Comment  (ML alanları + indeksler eklendi)
+# -------------------------------------------------------------------
 class Comment(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    blog = models.ForeignKey(Blog, on_delete=models.CASCADE, related_name="comments")
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="blog_comments"
+    )
+    blog = models.ForeignKey(
+        Blog,
+        on_delete=models.CASCADE,
+        related_name="comments"
+    )
     comment = models.TextField(max_length=250)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
     parent_comment = models.ForeignKey(
         "self", on_delete=models.CASCADE, null=True, blank=True, related_name="replies"
     )
-    likes = models.ManyToManyField(User, related_name="comment_likes", blank=True)
+    likes = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name="comment_likes", blank=True)
+
+    # ---- ML / Moderasyon ----
+    status = models.CharField(max_length=10, choices=CommentStatus.choices, default=CommentStatus.PENDING)
+    toxicity = models.FloatField(default=0)   # 0..1
+    sentiment = models.FloatField(default=0)  # -1..1
+    is_spam = models.BooleanField(default=False)
+    reason = models.CharField(max_length=255, blank=True)
 
     class Meta:
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["blog", "status", "-created_at"]),
+        ]
 
     def total_likes(self):
         return self.likes.count()
 
     def __str__(self):
-        return self.comment[:40]
+        return (self.comment or "")[:40]
+
+    @property
+    def is_visible(self):
+        return self.status == CommentStatus.APPROVED
 
 
+# -------------------------------------------------------------------
+# Profile
+# -------------------------------------------------------------------
 class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     bio = models.TextField(blank=True)
     avatar = models.ImageField(upload_to="avatars/", blank=True, null=True)
     cover = models.ImageField(upload_to="covers/", blank=True, null=True)
 
     def __str__(self):
-        return f"{self.user.username} Profile"
+        return f"{getattr(self.user, 'username', 'user')} Profile"
 
 
+# -------------------------------------------------------------------
+# ContactMessage
+# -------------------------------------------------------------------
 class ContactMessage(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField()
@@ -112,8 +155,9 @@ class ContactMessage(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.email})"
+    
 
-
+# blogs/models.py (içine ekle)
 class StaticPage(models.Model):
     title = models.CharField(max_length=200)
     slug = models.SlugField(unique=True)
@@ -127,9 +171,12 @@ class StaticPage(models.Model):
         return self.title
 
 
-# ---- Kaydet/Favori ----
+
+# -------------------------------------------------------------------
+# SavedPost
+# -------------------------------------------------------------------
 class SavedPost(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="saved_posts")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="saved_posts")
     post = models.ForeignKey(Blog, on_delete=models.CASCADE, related_name="saved_by")
     saved_at = models.DateTimeField(auto_now_add=True)
 
@@ -138,4 +185,4 @@ class SavedPost(models.Model):
         ordering = ["-saved_at"]
 
     def __str__(self):
-        return f"{self.user.username} saved {self.post.title}"
+        return f"{getattr(self.user, 'username', 'user')} saved {self.post.title}"
