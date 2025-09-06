@@ -4,6 +4,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic import TemplateView
 from django.contrib.auth import views as auth_views
+from django.views.generic import RedirectView
 
 from . import views
 
@@ -42,6 +43,7 @@ urlpatterns = [
 
     # robots.txt
     path("robots.txt", TemplateView.as_view(template_name="robots.txt", content_type="text/plain")),
+    path("search/", RedirectView.as_view(pattern_name="blogs:search"), name="search"),
 
     # Blog app (namespace = blogs)
     path("", include(("blogs.urls", "blogs"), namespace="blogs")),
