@@ -1,14 +1,12 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.core.paginator import Paginator
 from django.db.models import Q, F
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.timesince import timesince
-from .models import CommentStatus
 from django.views.decorators.http import require_POST
 
 from django.conf import settings
@@ -21,6 +19,7 @@ from .models import (
 from .forms import ProfileForm
 from .forms import CommentForm  # yorum formu
 
+
 # -----------------------
 # LİSTELEME / KATEGORİ
 # -----------------------
@@ -29,9 +28,9 @@ def posts_by_category(request, category_id):
     posts = Blog.objects.filter(status="Published", category=category).order_by("-updated_at")
     return render(request, "posts_by_category.html", {"posts": posts, "category": category})
 
+
 # -----------------------
 # DETAY SAYFASI (blogs.html)
-# URL name='blogs' -> home.html ile uyumlu
 # -----------------------
 def blogs(request, slug):
     """
@@ -53,7 +52,6 @@ def blogs(request, slug):
 
     # YORUM GÖNDERİMİ (aynı sayfaya POST)
     if request.method == "POST":
-        # AJAX mı?
         is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
 
         if not request.user.is_authenticated:
@@ -65,7 +63,7 @@ def blogs(request, slug):
         if not text:
             if is_ajax:
                 return JsonResponse({"ok": False, "error": "empty"}, status=400)
-            return HttpResponseRedirect(reverse("blogs", args=[slug]))
+            return HttpResponseRedirect(reverse("blogs:blogs", args=[slug]))
 
         # Yeni yorum objesi
         comment = Comment(
@@ -105,12 +103,12 @@ def blogs(request, slug):
                 "created": f"{timesince(comment.created_at)} ago",
                 "parent_id": parent_id or None,
                 "like_count": comment.likes.count(),
-                "status": comment.status,     # front-end istersen kullanabilir
-                "reason": comment.reason,     # moderasyon nedeni
+                "status": comment.status,
+                "reason": comment.reason,
             })
 
         # Normal redirect (yeni yoruma anchor ile dön)
-        return HttpResponseRedirect(reverse("blogs", args=[slug]) + f"#comment_{comment.id}")
+        return HttpResponseRedirect(reverse("blogs:blogs", args=[slug]) + f"#comment_{comment.id}")
 
     # is_saved bayrağı
     is_saved = False
@@ -125,6 +123,7 @@ def blogs(request, slug):
         "is_saved": is_saved,
     }
     return render(request, "blogs.html", context)
+
 
 # -----------------------
 # LIKE / SAVE AKSİYONLARI
@@ -141,6 +140,7 @@ def like_comment(request, comment_id):
         return JsonResponse({"ok": True, "comment_id": comment.id, "like_count": comment.likes.count()})
     return redirect(f'{request.META.get("HTTP_REFERER", "/")}#comment_{comment.id}')
 
+
 @login_required
 def like_post(request, slug):
     post = get_object_or_404(Blog, slug=slug, status="Published")
@@ -153,6 +153,7 @@ def like_post(request, slug):
         return JsonResponse({"ok": True, "likes": post.likes.count()})
     return redirect(request.META.get("HTTP_REFERER", "home"))
 
+
 @login_required
 def toggle_save_post(request, slug):
     post = get_object_or_404(Blog, slug=slug, status="Published")
@@ -162,7 +163,8 @@ def toggle_save_post(request, slug):
         obj.delete()
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
         return JsonResponse({"ok": True, "saved": saved})
-    return redirect(request.META.get("HTTP_REFERER", reverse("blogs", args=[slug])))
+    return redirect(request.META.get("HTTP_REFERER", reverse("blogs:blogs", args=[slug])))
+
 
 # -----------------------
 # PROFİL
@@ -180,6 +182,7 @@ def profile_edit(request):
     else:
         form = ProfileForm(instance=profile)
     return render(request, "profile_edit.html", {"form": form})
+
 
 @login_required
 def profile_view(request, username):
@@ -201,6 +204,7 @@ def profile_view(request, username):
     }
     return render(request, "profile.html", context)
 
+
 # -----------------------
 # ARAMA / HAKKIMIZDA / İLETİŞİM / STATİK SAYFA
 # -----------------------
@@ -215,8 +219,10 @@ def search(request):
         )
     return render(request, "search.html", {"blogs": blogs, "keyword": keyword})
 
+
 def about(request):
     return render(request, "about.html")
+
 
 def contact_view(request):
     from .forms import ContactForm
@@ -230,9 +236,11 @@ def contact_view(request):
         return render(request, "contact_success.html")
     return render(request, "contact.html", {"form": form})
 
+
 def static_page(request, slug):
     page = get_object_or_404(StaticPage, slug=slug)
     return render(request, "static_page.html", {"page": page})
+
 
 # -----------------------
 # Depolama kontrol (opsiyonel)
@@ -244,10 +252,9 @@ def storage_debug(request):
     )
 
 
-
-
-
-
+# -----------------------
+# (İsteğe bağlı) Ayrı comment_add endpoint'i
+# -----------------------
 @require_POST
 def comment_add(request, post_id):
     post = get_object_or_404(Blog, id=post_id, status="Published")
@@ -262,7 +269,7 @@ def comment_add(request, post_id):
     if not text:
         if is_ajax:
             return JsonResponse({"ok": False, "error": "empty"}, status=400)
-        return redirect("blogs", slug=post.slug)
+        return redirect("blogs:blogs", slug=post.slug)
 
     c = Comment(blog=post, user=request.user, comment=text, created_at=timezone.now())
 
@@ -295,4 +302,4 @@ def comment_add(request, post_id):
             "reason": c.reason,
         })
 
-    return redirect("blogs", slug=post.slug)
+    return redirect("blogs:blogs", slug=post.slug)

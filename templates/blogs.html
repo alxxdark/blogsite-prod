@@ -24,13 +24,13 @@
     <h1 class="mb-2">{{ single_blog.title }}</h1>
     <div class="post-actions">
       <!-- Post beğeni -->
-      <a id="like-post-btn" class="btn-soft link-plain" href="{% url 'like_post' single_blog.slug %}">
+      <a id="like-post-btn" class="btn-soft link-plain" href="{% url 'blogs:like_post' single_blog.slug %}">
         👍 Beğen (<span id="post-like-count">{{ single_blog.likes.count }}</span>)
       </a>
 
       <!-- Kaydet / Kaldır -->
       {% if user.is_authenticated %}
-        <a id="save-post-btn" class="btn-soft link-plain" href="{% url 'toggle_save_post' single_blog.slug %}">
+        <a id="save-post-btn" class="btn-soft link-plain" href="{% url 'blogs:toggle_save_post' single_blog.slug %}">
           {% if is_saved %}💾 Kaydı kaldır{% else %}💾 Kaydet{% endif %}
         </a>
       {% endif %}

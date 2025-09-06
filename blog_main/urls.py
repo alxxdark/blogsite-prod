@@ -11,9 +11,7 @@ from . import views
 from django.contrib.sitemaps.views import sitemap
 from blogs.sitemaps import BlogSitemap
 
-sitemaps = {
-    "blogs": BlogSitemap,
-}
+sitemaps = {"blogs": BlogSitemap}
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -43,16 +41,12 @@ urlpatterns = [
     path("reset/done/", auth_views.PasswordResetCompleteView.as_view(), name="password_reset_complete"),
 
     # robots.txt
-    path(
-        "robots.txt",
-        TemplateView.as_view(template_name="robots.txt", content_type="text/plain"),
-    ),
+    path("robots.txt", TemplateView.as_view(template_name="robots.txt", content_type="text/plain")),
 
-    # Blog app rotaları
-    path("", include("blogs.urls")),
+    # Blog app (namespace = blogs)
+    path("", include(("blogs.urls", "blogs"), namespace="blogs")),
 ]
 
-# DEBUG ortamında statik/medya servis et
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     if getattr(settings, "STATICFILES_DIRS", None):
@@ -60,10 +54,8 @@ if settings.DEBUG:
     elif getattr(settings, "STATIC_ROOT", None):
         urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
-# Geçici superuser endpointini sadece DEBUG'ta açık tut
 if settings.DEBUG:
     urlpatterns += [path("create-superuser/", views.create_superuser_view)]
 
-# Özel hata sayfaları
 handler404 = "django.views.defaults.page_not_found"
 handler500 = "django.views.defaults.server_error"

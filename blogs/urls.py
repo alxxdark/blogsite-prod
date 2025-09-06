@@ -1,8 +1,9 @@
 from django.urls import path
 from . import views
 
+app_name = "blogs"
+
 urlpatterns = [
-    # Liste/Kategori/aksiyonlar/profil/diğerleri önce
     path("category/<int:category_id>/", views.posts_by_category, name="posts_by_category"),
     path("comment/<int:comment_id>/like/", views.like_comment, name="like_comment"),
     path("<slug:slug>/like/", views.like_post, name="like_post"),
@@ -14,8 +15,5 @@ urlpatterns = [
     path("contact/", views.contact_view, name="contact"),
     path("page/<slug:slug>/", views.static_page, name="static_page"),
     path("post/<int:post_id>/comments/add/", views.comment_add, name="comment_add"),
-
-    # >>> EN SON: tek segmentli slug detayı <<<
-    path("<slug:slug>/", views.blogs, name="blogs"),  
+    path("<slug:slug>/", views.blogs, name="blogs"),
 ]
-
