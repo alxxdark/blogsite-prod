@@ -1,7 +1,7 @@
 {% load static %}
 <div class="my-3">
   <h5 class="text-uppercase text-warning" style="letter-spacing:1px;">
-    Yorumlar <span class="ms-2">🤖 yapay zekâ ile destekleniyor</span>
+    Yorumlar <span class="ms-2">🤖 Yapay zekâ ile destekleniyor</span>
   </h5>
 
   {% for c in comments %}
@@ -11,25 +11,78 @@
         <small class="text-muted">• {{ c.created_at|date:"d M Y H:i" }}</small>
         <p class="mb-1">{{ c.comment|linebreaksbr }}</p>
 
-        {% if request.user.is_superuser %}
-          <div class="small text-muted">
-            durum: {{ c.status }} • tox: {{ c.toxicity }} • sent: {{ c.sentiment }} • spam: {{ c.is_spam }} • {{ c.reason }}
-          </div>
-        {% endif %}
+        <div class="d-flex justify-content-between">
+          <a href="{% url 'blogs:like_comment' c.id %}" 
+             class="btn btn-sm btn-outline-primary like-comment-btn"
+             data-id="{{ c.id }}">
+            👍 {{ c.likes.count }}
+          </a>
+
+          {% if request.user.is_authenticated %}
+            <button type="button" 
+                    class="btn btn-sm btn-outline-secondary reply-btn"
+                    data-id="{{ c.id }}">
+              ↩️ Yanıtla
+            </button>
+          {% endif %}
+        </div>
+
+        <!-- Gizli cevap formu -->
+        <div id="reply-form-{{ c.id }}" class="reply-form mt-2" style="display:none;">
+          <form action="{% url 'blogs:comment_add' post.id %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="parent_id" value="{{ c.id }}">
+            <textarea name="comment" rows="2" class="form-control mb-2"
+                      placeholder="Yanıtınız..."></textarea>
+            <button class="btn btn-sm btn-primary">Gönder</button>
+          </form>
+        </div>
+
+        <!-- Varsa alt yorumlar -->
+        {% for r in c.replies.all %}
+          {% if r.is_visible %}
+            <div class="ms-3 mt-2 border-start ps-2">
+              <strong>{{ r.user.username }}</strong>
+              <small class="text-muted">• {{ r.created_at|date:"d M Y H:i" }}</small>
+              <p class="mb-1">{{ r.comment|linebreaksbr }}</p>
+            </div>
+          {% endif %}
+        {% endfor %}
       </div>
     {% endif %}
   {% empty %}
-    <p class="text-muted">Henüz yorum yok. İlk yorumu sen yaz.</p>
+    <p class="text-muted">Henüz yorum yok. İlk yorumu sen yaz 🤖</p>
   {% endfor %}
 
+  <!-- Yeni yorum formu -->
   {% if request.user.is_authenticated %}
     <form action="{% url 'blogs:comment_add' post.id %}" method="post" class="mt-3">
       {% csrf_token %}
-      {{ form.non_field_errors }}
-      <div class="mb-2">{{ form.comment }}</div>
-      <button class="btn btn-sm btn-primary">Gönder</button>
+      <div class="mb-2">
+        <textarea name="comment" rows="3" class="form-control"
+                  placeholder="Yorumunuz..."></textarea>
+      </div>
+      <small class="text-muted">🤖 Yorumlar yapay zekâ tarafından iyileştirilir</small>
+      <div class="text-end mt-2">
+        <button class="btn btn-sm btn-primary">💬 Yorum Yap</button>
+      </div>
     </form>
   {% else %}
-    <p class="text-muted">Yorum yazmak için giriş yap.</p>
+    <p class="text-muted">Yorum yazmak için giriş yapmalısın.</p>
   {% endif %}
 </div>
+
+<script>
+  // Yanıtla butonları için toggle
+  document.querySelectorAll(".reply-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const id = btn.dataset.id;
+      const form = document.getElementById("reply-form-" + id);
+      if (form.style.display === "none") {
+        form.style.display = "block";
+      } else {
+        form.style.display = "none";
+      }
+    });
+  });
+</script>
