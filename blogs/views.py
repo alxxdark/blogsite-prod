@@ -8,6 +8,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.timesince import timesince
+from .models import CommentStatus
+from django.views.decorators.http import require_POST
 
 from django.conf import settings
 import os
@@ -240,3 +242,57 @@ def storage_debug(request):
     return HttpResponse(
         f"STORAGE={getattr(settings, 'DEFAULT_FILE_STORAGE', 'local')}<br>CLOUDINARY_URL set? {masked}"
     )
+
+
+
+
+
+
+@require_POST
+def comment_add(request, post_id):
+    post = get_object_or_404(Blog, id=post_id, status="Published")
+    is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
+
+    if not request.user.is_authenticated:
+        if is_ajax:
+            return JsonResponse({"ok": False, "error": "auth_required"}, status=403)
+        return redirect("login")
+
+    text = (request.POST.get("comment") or "").strip()
+    if not text:
+        if is_ajax:
+            return JsonResponse({"ok": False, "error": "empty"}, status=400)
+        return redirect("blogs", slug=post.slug)
+
+    c = Comment(blog=post, user=request.user, comment=text, created_at=timezone.now())
+
+    parent_id = request.POST.get("parent_id")
+    if parent_id:
+        try:
+            c.parent_comment = Comment.objects.get(pk=parent_id, blog=post)
+        except Comment.DoesNotExist:
+            pass
+
+    c.save()  # -> signals ML moderasyon çalışır
+
+    if c.status == CommentStatus.APPROVED:
+        messages.success(request, "Yorumun yayınlandı. 🤖")
+    elif c.status == CommentStatus.PENDING:
+        messages.info(request, "Yorumun moderasyon bekliyor. 🤖")
+    else:
+        messages.warning(request, "Yorumun kurallara uymadığı için reddedildi. 🤖")
+
+    if is_ajax:
+        return JsonResponse({
+            "ok": True,
+            "id": c.id,
+            "user": request.user.username,
+            "comment": c.comment,
+            "created": f"{timesince(c.created_at)} ago",
+            "parent_id": parent_id or None,
+            "like_count": c.likes.count(),
+            "status": c.status,
+            "reason": c.reason,
+        })
+
+    return redirect("blogs", slug=post.slug)
