@@ -1,88 +1,87 @@
 {% load static %}
-<div class="my-3">
-  <h5 class="text-uppercase text-warning" style="letter-spacing:1px;">
-    Yorumlar <span class="ms-2">🤖 Yapay zekâ ile destekleniyor</span>
-  </h5>
 
+<style>
+  /* Daha kompakt ve okunaklı */
+  .c-wrap { max-width: 820px; }
+  .c-card { border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.03); border-radius:12px; padding:12px; }
+  .c-meta { color:#9aa0a6; font-size:.9rem; }
+  .c-actions { display:flex; gap:.6rem; align-items:center; }
+  .c-reply { border:1px dashed rgba(255,255,255,.18); border-radius:10px; padding:10px; background:rgba(255,255,255,.02); }
+  .c-indent { margin-left:1rem; }
+  .ai-badge { display:inline-flex; gap:.5rem; align-items:center; font-size:.86rem; color:#aeb3ff;
+              background:rgba(108,99,255,.12); border:1px solid rgba(108,99,255,.25);
+              padding:6px 10px; border-radius:10px; }
+</style>
+
+<div class="c-wrap" id="comments-container">
   {% for c in comments %}
-    {% if c.is_visible %}
-      <div class="border rounded p-2 mb-2 bg-light">
-        <strong>{{ c.user.username }}</strong>
-        <small class="text-muted">• {{ c.created_at|date:"d M Y H:i" }}</small>
-        <p class="mb-1">{{ c.comment|linebreaksbr }}</p>
-
+    {% if c.is_visible|default:True %}
+      <div id="comment_{{ c.id }}" class="c-card mb-3">
         <div class="d-flex justify-content-between">
-          <a href="{% url 'blogs:like_comment' c.id %}" 
-             class="btn btn-sm btn-outline-primary like-comment-btn"
-             data-id="{{ c.id }}">
-            👍 {{ c.likes.count }}
+          <div>
+            <strong>{{ c.user }}</strong>
+            <span class="c-meta">• {{ c.created_at|timesince }} ago</span>
+          </div>
+        </div>
+
+        <div class="mt-2">{{ c.comment|linebreaksbr }}</div>
+
+        <div class="c-actions mt-2">
+          <a class="link-plain btn btn-sm btn-outline-secondary js-like-comment"
+             href="{% url 'blogs:like_comment' c.id %}" data-id="{{ c.id }}">
+            👍 Beğen (<span id="like-count-{{ c.id }}">{{ c.likes.count }}</span>)
           </a>
 
           {% if request.user.is_authenticated %}
-            <button type="button" 
-                    class="btn btn-sm btn-outline-secondary reply-btn"
-                    data-id="{{ c.id }}">
-              ↩️ Yanıtla
-            </button>
+            <span class="btn btn-sm btn-outline-secondary toggle-reply"
+                  data-target="reply-form-{{ c.id }}">↩️ Yanıtla</span>
           {% endif %}
         </div>
 
-        <!-- Gizli cevap formu -->
-        <div id="reply-form-{{ c.id }}" class="reply-form mt-2" style="display:none;">
-          <form action="{% url 'blogs:comment_add' post.id %}" method="post">
+        {% if request.user.is_authenticated %}
+          <!-- Yanıt formu (AJAX; action boş -> blogs view'ına fetch ile gider) -->
+          <form id="reply-form-{{ c.id }}" class="mt-2 d-none js-reply-form c-reply"
+                data-parent="{{ c.id }}" method="post" action="">
             {% csrf_token %}
             <input type="hidden" name="parent_id" value="{{ c.id }}">
-            <textarea name="comment" rows="2" class="form-control mb-2"
-                      placeholder="Yanıtınız..."></textarea>
-            <button class="btn btn-sm btn-primary">Gönder</button>
-          </form>
-        </div>
-
-        <!-- Varsa alt yorumlar -->
-        {% for r in c.replies.all %}
-          {% if r.is_visible %}
-            <div class="ms-3 mt-2 border-start ps-2">
-              <strong>{{ r.user.username }}</strong>
-              <small class="text-muted">• {{ r.created_at|date:"d M Y H:i" }}</small>
-              <p class="mb-1">{{ r.comment|linebreaksbr }}</p>
+            <div class="input-group">
+              <input type="text" name="comment" class="form-control" placeholder="Yanıt yaz..." required>
+              <button type="submit" class="btn btn-outline-primary">Gönder</button>
             </div>
-          {% endif %}
-        {% endfor %}
+          </form>
+        {% endif %}
+
+        {% if c.replies.all %}
+          <div class="c-indent mt-2">
+            {% for r in c.replies.all %}
+              {% if r.is_visible|default:True %}
+                <div class="c-reply mb-2" id="reply_{{ r.id }}">
+                  <div><strong>{{ r.user }}</strong>
+                    <span class="c-meta">• {{ r.created_at|timesince }} ago</span>
+                  </div>
+                  <div class="mt-1">{{ r.comment|linebreaksbr }}</div>
+                </div>
+              {% endif %}
+            {% endfor %}
+          </div>
+        {% endif %}
       </div>
     {% endif %}
   {% empty %}
-    <p class="text-muted">Henüz yorum yok. İlk yorumu sen yaz 🤖</p>
+    <p class="c-meta">Henüz yorum yok.</p>
   {% endfor %}
-
-  <!-- Yeni yorum formu -->
-  {% if request.user.is_authenticated %}
-    <form action="{% url 'blogs:comment_add' post.id %}" method="post" class="mt-3">
-      {% csrf_token %}
-      <div class="mb-2">
-        <textarea name="comment" rows="3" class="form-control"
-                  placeholder="Yorumunuz..."></textarea>
-      </div>
-      <small class="text-muted">🤖 Yorumlar yapay zekâ tarafından iyileştirilir</small>
-      <div class="text-end mt-2">
-        <button class="btn btn-sm btn-primary">💬 Yorum Yap</button>
-      </div>
-    </form>
-  {% else %}
-    <p class="text-muted">Yorum yazmak için giriş yapmalısın.</p>
-  {% endif %}
 </div>
 
-<script>
-  // Yanıtla butonları için toggle
-  document.querySelectorAll(".reply-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const id = btn.dataset.id;
-      const form = document.getElementById("reply-form-" + id);
-      if (form.style.display === "none") {
-        form.style.display = "block";
-      } else {
-        form.style.display = "none";
-      }
-    });
-  });
-</script>
+{% if request.user.is_authenticated %}
+  <!-- Yeni yorum (AJAX; id/sınıflar blogs.html’deki JS ile birebir) -->
+  <form id="new-comment-form" class="c-card" method="post" action="">
+    {% csrf_token %}
+    <textarea name="comment" rows="3" class="form-control mb-2" placeholder="Yorumunuz..." required></textarea>
+    <div class="d-flex justify-content-between align-items-center">
+      <span class="ai-badge">🤖 Yapay zeka tarafından iyileştirilir</span>
+      <button type="submit" class="btn btn-primary">💬 Yorum Yap</button>
+    </div>
+  </form>
+{% else %}
+  <p class="c-meta">Yorum yazmak için <a href="{% url 'login' %}">giriş yap</a>.</p>
+{% endif %}
