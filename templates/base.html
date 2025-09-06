@@ -30,31 +30,14 @@
             50%  { color: #00e5ff; text-shadow: 0 0 12px #00e5ff; }
             100% { color: #00bcd4; text-shadow: 0 0 0px #00bcd4; }
         }
-
-        .blogend-pulse {
-            font-family: 'Segoe UI', sans-serif;
-            font-size: 2rem;
-            text-align: center;
-            animation: blogend-pulse 2s infinite;
-            transition: all 0.3s ease-in-out;
-        }
+        .blogend-pulse { font-family: 'Segoe UI', sans-serif; font-size: 2rem; text-align: center; animation: blogend-pulse 2s infinite; transition: all 0.3s ease-in-out; }
 
         .cookie-modal {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: #1e1e1e;
-            color: #e0e0e0;
-            padding: 20px;
-            border: 1px solid #00bcd4;
-            border-radius: 10px;
-            z-index: 9999;
-            max-width: 350px;
+            position: fixed; bottom: 20px; right: 20px; background-color: #1e1e1e; color: #e0e0e0;
+            padding: 20px; border: 1px solid #00bcd4; border-radius: 10px; z-index: 9999; max-width: 350px;
         }
-        .cookie-modal button {
-            margin-top: 10px;
-            margin-right: 5px;
-        }
+        .cookie-modal button { margin-top: 10px; margin-right: 5px; }
+        .toggler-line { display:block; width:22px; height:2px; background:#333; margin:4px 0; }
     </style>
 </head>
 <body>
@@ -77,11 +60,11 @@
                 </a>
             </div>
             <div class="col-4">
-                <form action="{% url "search" %}" method="GET">
+                <!-- BURASI: search artık blogs:search -->
+                <form action="{% url 'blogs:search' %}" method="GET">
                     <div class="input-group">
                         <input class="form-control" type="text" name="keyword" value="{{ keyword }}" placeholder="Enter search term..." aria-label="Enter search term..." aria-describedby="button-search" />
                         <button type="submit" class="btn btn-warning" id="button-search">Go!</button>
-
                     </div>
                 </form>
                 <div style="text-align: center; margin-top: 35px;">
@@ -92,12 +75,12 @@
             </div>
             <div class="col-4 d-flex justify-content-end align-items-center" style="margin-right: 20px;">
                 {% if not user.is_authenticated %}
-                <a class="btn btn-sm btn-warning" href="{% url "login" %}">Login</a> &nbsp;
-                <a class="btn btn-sm btn-outline-secondary" href="{% url "register" %}">Register</a>
+                  <a class="btn btn-sm btn-warning" href="{% url 'login' %}">Login</a> &nbsp;
+                  <a class="btn btn-sm btn-outline-secondary" href="{% url 'register' %}">Register</a>
                 {% else %}
-                <a href="{% url 'dashboard' %}" class="btn btn-warning text-white">Dashboard</a>
-                &emsp;
-                <a href="{% url 'logout' %}" class="btn btn-warning text-white">Logout</a>
+                  <a href="{% url 'dashboard' %}" class="btn btn-warning text-white">Dashboard</a>
+                  &emsp;
+                  <a href="{% url 'logout' %}" class="btn btn-warning text-white">Logout</a>
                 {% endif %}
             </div>
         </div>
@@ -122,14 +105,16 @@
             <ul class="navbar-nav ms-3">
               {% for cat in categories %}
               <li class="nav-item">
-                <a class="nav-link" href="{% url 'posts_by_category' cat.id %}">{{ cat.category_name }}</a>
+                <!-- BURASI: kategori linki blogs:posts_by_category -->
+                <a class="nav-link" href="{% url 'blogs:posts_by_category' cat.id %}">{{ cat.category_name }}</a>
               </li>
               {% endfor %}
             </ul>
           </div>
         </li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'about' %}">About</a></li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'contact' %}">Contact</a></li>
+        <!-- BURASI: static sayfalar blogs namespace -->
+        <li class="nav-item"><a class="nav-link" href="{% url 'blogs:about' %}">About</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'blogs:contact' %}">Contact</a></li>
       </ul>
     </div>
   </div>
@@ -140,7 +125,7 @@
 </div>
 
 <footer class="blog-footer">
-    <p>Blogend built with by <a href="{% url 'about' %}">Ali Sağnak</a></p>
+    <p>Blogend built with by <a href="{% url 'blogs:about' %}">Ali Sağnak</a></p>
 </footer>
 </div>
 
