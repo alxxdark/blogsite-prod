@@ -5,28 +5,19 @@
   </h5>
 
   {% for c in comments %}
-    <div class="border rounded p-2 mb-2 bg-light">
-      <strong>{{ c.user.username }}</strong>
-      <small class="text-muted">• {{ c.created_at|date:"d M Y H:i" }}</small>
-      <p class="mb-1">{{ c.comment|linebreaksbr }}</p>
+    {% if c.is_visible %}
+      <div class="border rounded p-2 mb-2 bg-light">
+        <strong>{{ c.user.username }}</strong>
+        <small class="text-muted">• {{ c.created_at|date:"d M Y H:i" }}</small>
+        <p class="mb-1">{{ c.comment|linebreaksbr }}</p>
 
-      {% if request.user.is_superuser %}
-        <div class="small text-muted">
-          durum: {{ c.status }} • tox: {{ c.toxicity }} • sent: {{ c.sentiment }} • spam: {{ c.is_spam }} • {{ c.reason }}
-        </div>
-      {% endif %}
-
-      {# cevaplar (varsa) #}
-      {% for r in c.replies.all %}
-        {% if r.is_visible %}
-          <div class="ms-3 border-start ps-2 my-1">
-            <strong>{{ r.user.username }}</strong>
-            <small class="text-muted">• {{ r.created_at|date:"d M Y H:i" }}</small>
-            <p class="mb-1">{{ r.comment|linebreaksbr }}</p>
+        {% if request.user.is_superuser %}
+          <div class="small text-muted">
+            durum: {{ c.status }} • tox: {{ c.toxicity }} • sent: {{ c.sentiment }} • spam: {{ c.is_spam }} • {{ c.reason }}
           </div>
         {% endif %}
-      {% endfor %}
-    </div>
+      </div>
+    {% endif %}
   {% empty %}
     <p class="text-muted">Henüz yorum yok. İlk yorumu sen yaz.</p>
   {% endfor %}

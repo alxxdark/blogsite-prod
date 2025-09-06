@@ -13,6 +13,7 @@ urlpatterns = [
     path("about/", views.about, name="about"),
     path("contact/", views.contact_view, name="contact"),
     path("page/<slug:slug>/", views.static_page, name="static_page"),
+    path("post/<int:post_id>/comments/add/", views.comment_add, name="comment_add"),
 
     # >>> EN SON: tek segmentli slug detayı <<<
     path("<slug:slug>/", views.blogs, name="blogs"),  

@@ -13,7 +13,9 @@ from django.conf import settings
 import os
 
 # Modeller ve formlar
-from .models import Profile, Blog, Category, Comment, ContactMessage, StaticPage, SavedPost
+from .models import (
+    Profile, Blog, Category, Comment, ContactMessage, StaticPage, SavedPost, CommentStatus
+)
 from .forms import ProfileForm
 from .forms import CommentForm  # yorum formu
 
@@ -39,28 +41,39 @@ def blogs(request, slug):
     Blog.objects.filter(pk=single_blog.pk).update(view_count=F("view_count") + 1)
     single_blog.refresh_from_db(fields=["view_count"])
 
-    comments = Comment.objects.filter(blog=single_blog).order_by("-created_at")
+    # SADECE ONAYLI KÖK YORUMLAR (cevaplar include içinde r.is_visible ile süzülür)
+    comments = Comment.objects.filter(
+        blog=single_blog,
+        status=CommentStatus.APPROVED,
+        parent_comment__isnull=True
+    ).order_by("-created_at")
     comment_count = comments.count()
 
-    # Yorum gönderimi
+    # YORUM GÖNDERİMİ (aynı sayfaya POST)
     if request.method == "POST":
+        # AJAX mı?
+        is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
+
         if not request.user.is_authenticated:
-            if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            if is_ajax:
                 return JsonResponse({"ok": False, "error": "auth_required"}, status=403)
             return redirect("login")
 
         text = (request.POST.get("comment") or "").strip()
         if not text:
-            if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            if is_ajax:
                 return JsonResponse({"ok": False, "error": "empty"}, status=400)
             return HttpResponseRedirect(reverse("blogs", args=[slug]))
 
+        # Yeni yorum objesi
         comment = Comment(
             blog=single_blog,
             user=request.user,
             comment=text,
             created_at=timezone.now(),
         )
+
+        # Yanıt ise parent bağla
         parent_id = request.POST.get("parent_id")
         if parent_id:
             try:
@@ -68,9 +81,20 @@ def blogs(request, slug):
                 comment.parent_comment = parent_obj
             except Comment.DoesNotExist:
                 pass
+
+        # Kaydet -> signals.auto_moderate_comment ML çalıştırır
         comment.save()
 
-        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        # Duruma göre kullanıcı mesajı
+        if comment.status == CommentStatus.APPROVED:
+            messages.success(request, "Yorumun yayınlandı. 🤖")
+        elif comment.status == CommentStatus.PENDING:
+            messages.info(request, "Yorumun moderasyon bekliyor. 🤖")
+        else:
+            messages.warning(request, "Yorumun kurallara uymadığı için reddedildi. 🤖")
+
+        # AJAX cevap
+        if is_ajax:
             return JsonResponse({
                 "ok": True,
                 "id": comment.id,
@@ -79,8 +103,11 @@ def blogs(request, slug):
                 "created": f"{timesince(comment.created_at)} ago",
                 "parent_id": parent_id or None,
                 "like_count": comment.likes.count(),
+                "status": comment.status,     # front-end istersen kullanabilir
+                "reason": comment.reason,     # moderasyon nedeni
             })
 
+        # Normal redirect (yeni yoruma anchor ile dön)
         return HttpResponseRedirect(reverse("blogs", args=[slug]) + f"#comment_{comment.id}")
 
     # is_saved bayrağı
