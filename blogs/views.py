@@ -38,11 +38,11 @@ def blogs(request, slug):
     """
     single_blog = get_object_or_404(Blog, slug=slug, status="Published")
 
-    # View counter (yarış koşullarında güvenli)
+    # View counter
     Blog.objects.filter(pk=single_blog.pk).update(view_count=F("view_count") + 1)
     single_blog.refresh_from_db(fields=["view_count"])
 
-    # SADECE ONAYLI KÖK YORUMLAR (cevaplar include içinde r.is_visible ile süzülür)
+    # Onaylı kök yorumlar
     comments = Comment.objects.filter(
         blog=single_blog,
         status=CommentStatus.APPROVED,
@@ -50,7 +50,7 @@ def blogs(request, slug):
     ).order_by("-created_at")
     comment_count = comments.count()
 
-    # YORUM GÖNDERİMİ (aynı sayfaya POST)
+    # Yorum gönderimi
     if request.method == "POST":
         is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
 
@@ -65,7 +65,6 @@ def blogs(request, slug):
                 return JsonResponse({"ok": False, "error": "empty"}, status=400)
             return HttpResponseRedirect(reverse("blogs:blogs", args=[slug]))
 
-        # Yeni yorum objesi
         comment = Comment(
             blog=single_blog,
             user=request.user,
@@ -73,7 +72,6 @@ def blogs(request, slug):
             created_at=timezone.now(),
         )
 
-        # Yanıt ise parent bağla
         parent_id = request.POST.get("parent_id")
         if parent_id:
             try:
@@ -82,10 +80,8 @@ def blogs(request, slug):
             except Comment.DoesNotExist:
                 pass
 
-        # Kaydet -> signals.auto_moderate_comment ML çalıştırır
         comment.save()
 
-        # Duruma göre kullanıcı mesajı
         if comment.status == CommentStatus.APPROVED:
             messages.success(request, "Yorumun yayınlandı. 🤖")
         elif comment.status == CommentStatus.PENDING:
@@ -93,7 +89,6 @@ def blogs(request, slug):
         else:
             messages.warning(request, "Yorumun kurallara uymadığı için reddedildi. 🤖")
 
-        # AJAX cevap
         if is_ajax:
             return JsonResponse({
                 "ok": True,
@@ -107,10 +102,8 @@ def blogs(request, slug):
                 "reason": comment.reason,
             })
 
-        # Normal redirect (yeni yoruma anchor ile dön)
         return HttpResponseRedirect(reverse("blogs:blogs", args=[slug]) + f"#comment_{comment.id}")
 
-    # is_saved bayrağı
     is_saved = False
     if request.user.is_authenticated:
         is_saved = SavedPost.objects.filter(user=request.user, post=single_blog).exists()
@@ -126,7 +119,7 @@ def blogs(request, slug):
 
 
 # -----------------------
-# LIKE / SAVE AKSİYONLARI
+# LIKE / SAVE
 # -----------------------
 @login_required
 def like_comment(request, comment_id):
@@ -177,7 +170,8 @@ def profile_edit(request):
         if form.is_valid():
             form.save()
             messages.success(request, "Profilin güncellendi.")
-            return redirect("profile", username=request.user.username)
+            # namespace eklendi
+            return redirect("blogs:profile", username=request.user.username)
         messages.error(request, "Formda hatalar var. Lütfen kontrol et.")
     else:
         form = ProfileForm(instance=profile)
@@ -280,7 +274,7 @@ def comment_add(request, post_id):
         except Comment.DoesNotExist:
             pass
 
-    c.save()  # -> signals ML moderasyon çalışır
+    c.save()
 
     if c.status == CommentStatus.APPROVED:
         messages.success(request, "Yorumun yayınlandı. 🤖")

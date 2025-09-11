@@ -54,8 +54,8 @@ class Blog(models.Model):
         return self.title
 
     def get_absolute_url(self):
-        # blogs/urls.py: path("<slug:slug>/", views.blogs, name="blogs")
-        return reverse("blogs", kwargs={"slug": self.slug})
+        # namespaceli kullanım
+        return reverse("blogs:blogs", kwargs={"slug": self.slug})
 
     @property
     def description(self):
@@ -83,7 +83,7 @@ class CommentStatus(models.TextChoices):
 
 
 # -------------------------------------------------------------------
-# Comment  (ML alanları + indeksler eklendi)
+# Comment  (ML alanları + indeksler)
 # -------------------------------------------------------------------
 class Comment(models.Model):
     user = models.ForeignKey(
@@ -155,9 +155,11 @@ class ContactMessage(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.email})"
-    
 
-# blogs/models.py (içine ekle)
+
+# -------------------------------------------------------------------
+# StaticPage
+# -------------------------------------------------------------------
 class StaticPage(models.Model):
     title = models.CharField(max_length=200)
     slug = models.SlugField(unique=True)
@@ -169,7 +171,6 @@ class StaticPage(models.Model):
 
     def __str__(self):
         return self.title
-
 
 
 # -------------------------------------------------------------------
