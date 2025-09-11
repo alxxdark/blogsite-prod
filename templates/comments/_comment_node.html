@@ -1,4 +1,3 @@
-{%* templates/comments/_comment_node.html *%}
 <div id="comment_{{ node.id }}" class="c-card mb-2">
   <div class="d-flex justify-content-between">
     <div>
@@ -33,7 +32,6 @@
     </form>
   {% endif %}
 
-  {# Çocuklar için yer: AJAX burayı hedefliyor #}
   <div class="c-indent mt-2" data-children="{{ node.id }}">
     {% for child in node.replies.all %}
       {% if child.is_visible|default:True %}
