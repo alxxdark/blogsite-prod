@@ -7,6 +7,8 @@
   .btn-soft { border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.03); padding:.4rem .7rem; border-radius:.65rem; font-size:.9rem; }
   .btn-soft:hover { background:rgba(255,255,255,0.06); }
   .meta { color: #9aa0a6; font-size:.9rem; }
+
+  /* eski yorum stillerin kalsın; comments_thread kendi stillerini de getiriyor – çakışmaz */
   .comment-card { border:1px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.02); border-radius: .8rem; padding: .9rem; }
   .reply-card { border:1px dashed rgba(255,255,255,0.15); background:rgba(255,255,255,0.02); border-radius:.7rem; padding:.7rem; }
   .reply-indent { margin-left: 1.25rem; }
@@ -70,7 +72,7 @@
     <span class="badge-pill" id="comment-count">{{ comment_count }}</span>
   </div>
 
-  <!-- Yorum bölümü: INCLUDE -->
+  <!-- Yorum bölümü -->
   {% include "comments/comments_thread.html" with post=single_blog comments=comments form=form %}
 
 </div>
@@ -145,157 +147,6 @@
         window.location.href = "{% url 'login' %}";
       }
     });
-  }
-
-  /* Yorum beğeni (AJAX POST) */
-  function wireLikeHandlers(scope){
-    scope.querySelectorAll('.js-like-comment').forEach((a) => {
-      a.addEventListener('click', async (e) => {
-        e.preventDefault();
-        const url = a.getAttribute('href');
-        const id = a.dataset.id;
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: {'X-Requested-With':'XMLHttpRequest', 'X-CSRFToken': csrftoken},
-        });
-        if (res.ok){
-          const data = await res.json();
-          if (data.ok){
-            const span = document.getElementById(`like-count-${id}`);
-            if (span) span.textContent = data.like_count;
-          }
-        } else if (res.status === 403){
-          window.location.href = "{% url 'login' %}";
-        }
-      });
-    });
-  }
-
-  /* Yanıt formunu aç/kapat */
-  function wireReplyToggles(scope){
-    scope.querySelectorAll('.toggle-reply').forEach((btn)=>{
-      btn.addEventListener('click', ()=>{
-        const id = btn.getAttribute('data-target');
-        const el = document.getElementById(id);
-        if (!el) return;
-        el.classList.toggle('d-none');
-        const input = el.querySelector('input[name="comment"]');
-        if (!el.classList.contains('d-none') && input) input.focus();
-      });
-    });
-  }
-
-  /* Reply form submit (AJAX POST) */
-  function wireReplyForms(scope){
-    scope.querySelectorAll('.js-reply-form').forEach((form)=>{
-      form.addEventListener('submit', async (e)=>{
-        e.preventDefault();
-        const parentId = form.dataset.parent;
-        const formData = new FormData(form);
-        const res = await fetch(window.location.href, {
-          method:'POST',
-          headers:{'X-Requested-With':'XMLHttpRequest', 'X-CSRFToken': csrftoken},
-          body: formData
-        });
-        if (res.ok){
-          const data = await res.json();
-          if (data.ok){
-            let indent = document.querySelector(`#comment_${parentId} .reply-indent`);
-            if (!indent){
-              indent = document.createElement('div');
-              indent.className = 'reply-indent mt-3';
-              document.getElementById(`comment_${parentId}`).appendChild(indent);
-            }
-            const reply = document.createElement('div');
-            reply.className = 'reply-card mb-2';
-            reply.id = `reply_${data.id}`;
-            reply.innerHTML = `
-              <div><strong>${data.user}</strong> <span class="meta">• ${data.created}</span></div>
-              <div class="mt-1">${escapeHtml(data.comment)}</div>
-            `;
-            indent.appendChild(reply);
-
-            form.reset();
-            form.classList.add('d-none');
-          }
-        } else if (res.status === 403){
-          window.location.href = "{% url 'login' %}";
-        }
-      });
-    });
-  }
-
-  /* Yeni yorum gönderimi (AJAX POST) */
-  const newCommentForm = document.getElementById('new-comment-form');
-  if (newCommentForm){
-    newCommentForm.addEventListener('submit', async (e)=>{
-      e.preventDefault();
-      const formData = new FormData(newCommentForm);
-      const res = await fetch(window.location.href, {
-        method: 'POST',
-        headers: {'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': csrftoken},
-        body: formData
-      });
-      if (res.ok){
-        const data = await res.json();
-        if (data.ok){
-          // sayaç
-          const cc = document.getElementById('comment-count');
-          if (cc) cc.textContent = parseInt(cc.textContent || '0', 10) + 1;
-
-          // yeni yorumu üstte göster
-          const container = document.getElementById('comments-container');
-          const div = document.createElement('div');
-          div.className = 'comment-card mb-3';
-          div.id = `comment_${data.id}`;
-          div.style.maxWidth = '820px';
-          div.innerHTML = `
-            <div class="d-flex justify-content-between">
-              <div><strong>${data.user}</strong> <span class="meta">• ${data.created}</span></div>
-            </div>
-            <div class="mt-2">${escapeHtml(data.comment)}</div>
-            <div class="comment-actions mt-2">
-              <a class="link-plain btn-soft js-like-comment" href="/comment/${data.id}/like/" data-id="${data.id}">
-                👍 Like (<span id="like-count-${data.id}">${data.like_count}</span>)
-              </a>
-              <span class="toggle-reply btn-soft" data-target="reply-form-${data.id}">↩️ Yanıtla</span>
-            </div>
-            <form id="reply-form-${data.id}" class="mt-2 d-none js-reply-form" data-parent="${data.id}" method="post" action="">
-              <input type="hidden" name="parent_id" value="${data.id}">
-              <div class="input-group">
-                <input type="text" name="comment" class="form-control" placeholder="Yanıt yaz..." required>
-                <button type="submit" class="btn btn-outline-primary">Gönder</button>
-              </div>
-            </form>
-          `;
-          container.prepend(div);
-
-          newCommentForm.reset();
-          wireDynamicHandlers(div);
-        }
-      } else if (res.status === 403){
-        window.location.href = "{% url 'login' %}";
-      }
-    });
-  }
-
-  /* Dinamik eklenen öğeler için handler’ları bağla */
-  function wireDynamicHandlers(scope){
-    wireLikeHandlers(scope);
-    wireReplyToggles(scope);
-    wireReplyForms(scope);
-  }
-  // İlk yüklemede de bağla:
-  wireDynamicHandlers(document);
-
-  /* Basit HTML escape */
-  function escapeHtml(str){
-    return String(str)
-      .replaceAll('&','&amp;')
-      .replaceAll('<','&lt;')
-      .replaceAll('>','&gt;')
-      .replaceAll('"','&quot;')
-      .replaceAll("'",'&#039;');
   }
 </script>
 {% endblock %}

@@ -40,7 +40,7 @@ class ProfileForm(forms.ModelForm):
 class CommentForm(forms.ModelForm):
     class Meta:
         model = Comment
-        fields = ["comment"]   # sadece yorum metni
+        fields = ["comment","image"]   
         widgets = {
             "comment": forms.Textarea(attrs={
                 "rows": 3,

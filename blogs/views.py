@@ -1,7 +1,8 @@
+# blogs/views.py
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.db.models import Q, F
+from django.db.models import Q, F, Prefetch
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -18,6 +19,27 @@ from .models import (
 )
 from .forms import ProfileForm
 from .forms import CommentForm  # yorum formu
+
+
+# ---- Yorum görseli için basit validasyon sabitleri ----
+ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
+MAX_IMAGE_SIZE = 5 * 1024 * 1024  # 5 MB
+
+
+def _comment_json(c, parent_id=None):
+    """AJAX cevap gövdesi (tek yerde toplu)."""
+    return {
+        "ok": True,
+        "id": c.id,
+        "user": getattr(c.user, "username", str(c.user)),
+        "comment": c.comment,
+        "created": f"{timesince(c.created_at)} ago",
+        "parent_id": parent_id,
+        "like_count": c.likes.count(),
+        "status": c.status,
+        "reason": c.reason,
+        "image_url": (c.image.url if getattr(c, "image", None) else None),
+    }
 
 
 # -----------------------
@@ -42,15 +64,21 @@ def blogs(request, slug):
     Blog.objects.filter(pk=single_blog.pk).update(view_count=F("view_count") + 1)
     single_blog.refresh_from_db(fields=["view_count"])
 
-    # Onaylı kök yorumlar
-    comments = Comment.objects.filter(
-        blog=single_blog,
-        status=CommentStatus.APPROVED,
-        parent_comment__isnull=True
-    ).order_by("-created_at")
+    # Onaylı kök yorumlar (+1 seviyeye kadar onaylı cevapları önden getir)
+    replies_qs = Comment.objects.filter(status=CommentStatus.APPROVED).select_related("user").order_by("created_at")
+    comments = (
+        Comment.objects.filter(
+            blog=single_blog,
+            status=CommentStatus.APPROVED,
+            parent_comment__isnull=True,
+        )
+        .select_related("user")
+        .prefetch_related(Prefetch("replies", queryset=replies_qs))
+        .order_by("-created_at")
+    )
     comment_count = comments.count()
 
-    # Yorum gönderimi
+    # Yorum gönderimi (aynı sayfaya POST)
     if request.method == "POST":
         is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
 
@@ -72,6 +100,7 @@ def blogs(request, slug):
             created_at=timezone.now(),
         )
 
+        # Yanıt ise parent bağla
         parent_id = request.POST.get("parent_id")
         if parent_id:
             try:
@@ -80,8 +109,24 @@ def blogs(request, slug):
             except Comment.DoesNotExist:
                 pass
 
+        # (İsteğe bağlı) Görsel
+        img = request.FILES.get("image")
+        if img:
+            if img.content_type not in ALLOWED_IMAGE_TYPES:
+                if is_ajax:
+                    return JsonResponse({"ok": False, "error": "bad_image_type"}, status=400)
+                messages.error(request, "Desteklenmeyen görsel türü.")
+                return HttpResponseRedirect(reverse("blogs:blogs", args=[slug]))
+            if img.size > MAX_IMAGE_SIZE:
+                if is_ajax:
+                    return JsonResponse({"ok": False, "error": "too_large"}, status=400)
+                messages.error(request, "Görsel en fazla 5 MB olmalı.")
+                return HttpResponseRedirect(reverse("blogs:blogs", args=[slug]))
+            comment.image = img  # models.py'de Comment.image alanı olmalı
+
         comment.save()
 
+        # Duruma göre kullanıcı mesajı
         if comment.status == CommentStatus.APPROVED:
             messages.success(request, "Yorumun yayınlandı. 🤖")
         elif comment.status == CommentStatus.PENDING:
@@ -89,21 +134,14 @@ def blogs(request, slug):
         else:
             messages.warning(request, "Yorumun kurallara uymadığı için reddedildi. 🤖")
 
+        # AJAX cevap
         if is_ajax:
-            return JsonResponse({
-                "ok": True,
-                "id": comment.id,
-                "user": request.user.username,
-                "comment": comment.comment,
-                "created": f"{timesince(comment.created_at)} ago",
-                "parent_id": parent_id or None,
-                "like_count": comment.likes.count(),
-                "status": comment.status,
-                "reason": comment.reason,
-            })
+            return JsonResponse(_comment_json(comment, parent_id=parent_id or None))
 
+        # Normal redirect (yeni yoruma anchor ile dön)
         return HttpResponseRedirect(reverse("blogs:blogs", args=[slug]) + f"#comment_{comment.id}")
 
+    # is_saved bayrağı
     is_saved = False
     if request.user.is_authenticated:
         is_saved = SavedPost.objects.filter(user=request.user, post=single_blog).exists()
@@ -170,7 +208,6 @@ def profile_edit(request):
         if form.is_valid():
             form.save()
             messages.success(request, "Profilin güncellendi.")
-            # namespace eklendi
             return redirect("blogs:profile", username=request.user.username)
         messages.error(request, "Formda hatalar var. Lütfen kontrol et.")
     else:
@@ -247,7 +284,7 @@ def storage_debug(request):
 
 
 # -----------------------
-# (İsteğe bağlı) Ayrı comment_add endpoint'i
+# Ayrı comment_add endpoint'i (kullanıyorsan)
 # -----------------------
 @require_POST
 def comment_add(request, post_id):
@@ -274,6 +311,21 @@ def comment_add(request, post_id):
         except Comment.DoesNotExist:
             pass
 
+    # (İsteğe bağlı) Görsel
+    img = request.FILES.get("image")
+    if img:
+        if img.content_type not in ALLOWED_IMAGE_TYPES:
+            if is_ajax:
+                return JsonResponse({"ok": False, "error": "bad_image_type"}, status=400)
+            messages.error(request, "Desteklenmeyen görsel türü.")
+            return redirect("blogs:blogs", slug=post.slug)
+        if img.size > MAX_IMAGE_SIZE:
+            if is_ajax:
+                return JsonResponse({"ok": False, "error": "too_large"}, status=400)
+            messages.error(request, "Görsel en fazla 5 MB olmalı.")
+            return redirect("blogs:blogs", slug=post.slug)
+        c.image = img
+
     c.save()
 
     if c.status == CommentStatus.APPROVED:
@@ -284,16 +336,6 @@ def comment_add(request, post_id):
         messages.warning(request, "Yorumun kurallara uymadığı için reddedildi. 🤖")
 
     if is_ajax:
-        return JsonResponse({
-            "ok": True,
-            "id": c.id,
-            "user": request.user.username,
-            "comment": c.comment,
-            "created": f"{timesince(c.created_at)} ago",
-            "parent_id": parent_id or None,
-            "like_count": c.likes.count(),
-            "status": c.status,
-            "reason": c.reason,
-        })
+        return JsonResponse(_comment_json(c, parent_id=parent_id or None))
 
     return redirect("blogs:blogs", slug=post.slug)

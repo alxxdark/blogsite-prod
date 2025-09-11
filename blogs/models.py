@@ -103,6 +103,7 @@ class Comment(models.Model):
         "self", on_delete=models.CASCADE, null=True, blank=True, related_name="replies"
     )
     likes = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name="comment_likes", blank=True)
+    image = models.ImageField(upload_to="comment_images/%Y/%m/%d", blank=True, null=True)
 
     # ---- ML / Moderasyon ----
     status = models.CharField(max_length=10, choices=CommentStatus.choices, default=CommentStatus.PENDING)
@@ -187,3 +188,5 @@ class SavedPost(models.Model):
 
     def __str__(self):
         return f"{getattr(self.user, 'username', 'user')} saved {self.post.title}"
+
+

@@ -1,3 +1,4 @@
+{# Tek bir yorumu ve tüm çocuklarını çizen recursive parça #}
 <div id="comment_{{ node.id }}" class="c-card mb-2">
   <div class="d-flex justify-content-between">
     <div>
@@ -7,6 +8,13 @@
   </div>
 
   <div class="mt-2">{{ node.comment|linebreaksbr }}</div>
+
+  {# YORUM GÖRSELİ (varsa) #}
+  {% if node.image %}
+    <div class="mt-2">
+      <img src="{{ node.image.url }}" alt="" style="max-width:100%;height:auto;border-radius:8px;">
+    </div>
+  {% endif %}
 
   <div class="c-actions mt-2">
     <a class="link-plain btn btn-sm btn-outline-secondary js-like-comment"
@@ -21,17 +29,26 @@
   </div>
 
   {% if request.user.is_authenticated %}
-    <form id="reply-form-{{ node.id }}" class="mt-2 d-none js-reply-form c-reply"
-          data-parent="{{ node.id }}" method="post" action="">
+    {# YANIT FORMU — AJAX; dosya yükleme için enctype gerekiyor #}
+    <form id="reply-form-{{ node.id }}"
+          class="mt-2 d-none js-reply-form c-reply"
+          data-parent="{{ node.id }}"
+          method="post"
+          action=""
+          enctype="multipart/form-data">
       {% csrf_token %}
       <input type="hidden" name="parent_id" value="{{ node.id }}">
-      <div class="input-group">
+      <div class="mb-2">
         <input type="text" name="comment" class="form-control" placeholder="Yanıt yaz..." required>
-        <button type="submit" class="btn btn-outline-primary">Gönder</button>
+      </div>
+      <div class="d-flex gap-2 align-items-center">
+        <input type="file" name="image" accept="image/*" class="form-control form-control-sm" style="max-width:280px;">
+        <button type="submit" class="btn btn-outline-primary btn-sm">Gönder</button>
       </div>
     </form>
   {% endif %}
 
+  {# ÇOCUKLAR (limitsiz iç içe) #}
   <div class="c-indent mt-2" data-children="{{ node.id }}">
     {% for child in node.replies.all %}
       {% if child.is_visible|default:True %}
