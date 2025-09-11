@@ -1,0 +1,50 @@
+{# Tek bir yorum düğümünü ve tüm alt çocuklarını (sınırsız) çizer #}
+{% if node.is_visible|default:True %}
+  <div id="comment_{{ node.id }}" class="c-card mb-3">
+    <div class="d-flex justify-content-between">
+      <div>
+        <strong>{{ node.user }}</strong>
+        <span class="c-meta">• {{ node.created_at|timesince }} ago</span>
+      </div>
+    </div>
+
+    <div class="mt-2">{{ node.comment|linebreaksbr }}</div>
+
+    <div class="c-actions mt-2">
+      <a class="link-plain btn btn-sm btn-outline-secondary js-like-comment"
+         href="{% url 'blogs:like_comment' node.id %}"
+         data-id="{{ node.id }}">
+        👍 Beğen (<span id="like-count-{{ node.id }}">{{ node.likes.count }}</span>)
+      </a>
+
+      {% if request.user.is_authenticated %}
+        <span class="btn btn-sm btn-outline-secondary toggle-reply"
+              data-target="reply-form-{{ node.id }}">↩️ Yanıtla</span>
+      {% endif %}
+    </div>
+
+    {% if request.user.is_authenticated %}
+      <!-- Bu yoruma yanıt formu (AJAX) -->
+      <form id="reply-form-{{ node.id }}" class="mt-2 d-none js-reply-form c-reply"
+            data-parent="{{ node.id }}" method="post" action="">
+        {% csrf_token %}
+        <input type="hidden" name="parent_id" value="{{ node.id }}">
+        <div class="input-group">
+          <input type="text" name="comment" class="form-control" placeholder="Yanıt yaz..." required>
+          <button type="submit" class="btn btn-outline-primary">Gönder</button>
+        </div>
+      </form>
+    {% endif %}
+
+    {# Çocukları (replies) varsa, kendini tekrar çağır (sonsuz derinlik) #}
+    {% with children=node.replies.all %}
+      {% if children %}
+        <div class="c-indent mt-2">
+          {% for child in children %}
+            {% include "comments/_comment_node.html" with node=child only %}
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+  </div>
+{% endif %}

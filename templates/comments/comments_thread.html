@@ -85,3 +85,26 @@
 {% else %}
   <p class="c-meta">Yorum yazmak için <a href="{% url 'login' %}">giriş yap</a>.</p>
 {% endif %}
+
+<div class="reply-card mb-2" id="reply_{{ r.id }}">
+  <div>
+    <strong>{{ r.user }}</strong>
+    <span class="meta">• {{ r.created_at|timesince }} ago</span>
+  </div>
+  <div class="mt-1">{{ r.comment|linebreaksbr }}</div>
+
+  {% if request.user.is_authenticated %}
+    <div class="mt-1">
+      <span class="toggle-reply btn-soft" data-target="reply-form-{{ r.id }}">↩️ Yanıtla</span>
+    </div>
+    <form id="reply-form-{{ r.id }}" class="mt-2 d-none js-reply-form"
+          data-parent="{{ r.id }}" method="post" action="">
+      {% csrf_token %}
+      <input type="hidden" name="parent_id" value="{{ r.id }}">
+      <div class="input-group">
+        <input type="text" name="comment" class="form-control" placeholder="Yanıt yaz..." required>
+        <button type="submit" class="btn btn-outline-primary">Gönder</button>
+      </div>
+    </form>
+  {% endif %}
+</div>
