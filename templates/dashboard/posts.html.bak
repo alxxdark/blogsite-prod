@@ -1,4 +1,4 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 
 {% block content %}
 <div class="row">
@@ -23,7 +23,7 @@
                 {% for post in page_obj %}
                 <tr>
                     <td>{{ forloop.counter }}</td>
-                    <td><a href="{% url 'blogs:blogs' post.slug %}" style="color: black;">{{ post.title }}</a></td>
+                    <td><a href="{% url 'blogs' post.slug %}" style="color: black;">{{ post.title }}</a></td>
                     <td>{{ post.category }}</td>
                     <td>{{ post.author }}</td>
                     <td>{{ post.status }}</td>
@@ -55,4 +55,3 @@
     </div>
 </div>
 {% endblock %}
-

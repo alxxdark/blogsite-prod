@@ -1,8 +1,8 @@
-﻿<div id="comment_{{ comment.id }}" class="comment-card mb-3" style="max-width: 820px;">
+<div id="comment_{{ comment.id }}" class="comment-card mb-3" style="max-width: 820px;">
   <div class="d-flex justify-content-between">
     <div>
       <strong>{{ comment.user }}</strong>
-      <span class="meta">â€¢ {{ comment.created_at|timesince }} ago</span>
+      <span class="meta">• {{ comment.created_at|timesince }} ago</span>
     </div>
   </div>
 
@@ -12,41 +12,40 @@
 
   <div class="comment-actions mt-2">
     <a class="link-plain btn-soft like-btn"
-       href="{% url 'blogs:like_comment' comment.id %}"
+       href="{% url 'like_comment' comment.id %}"
        data-like-api-url="{% url 'like_comment_api' comment.id %}"
        data-comment-id="{{ comment.id }}">
-      ğŸ‘ Like (<span class="like-count">{{ comment.likes.count }}</span>)
+      👍 Like (<span class="like-count">{{ comment.likes.count }}</span>)
     </a>
     {% if user.is_authenticated %}
-      <span class="toggle-reply btn-soft" data-target="reply-form-{{ comment.id }}">â†©ï¸ YanÄ±tla</span>
+      <span class="toggle-reply btn-soft" data-target="reply-form-{{ comment.id }}">↩️ Yanıtla</span>
     {% endif %}
   </div>
 
   {% if user.is_authenticated %}
-  <!-- YanÄ±t formu (toggle) -->
+  <!-- Yanıt formu (toggle) -->
   <form id="reply-form-{{ comment.id }}" class="mt-2 d-none ajax-reply-form"
         method="post"
         data-slug="{{ single_blog.slug }}"
         data-parent-id="{{ comment.id }}">
     {% csrf_token %}
     <div class="input-group">
-      <input type="text" name="comment" class="form-control" placeholder="YanÄ±t yaz..." required>
-      <button type="submit" class="btn btn-outline-primary">GÃ¶nder</button>
+      <input type="text" name="comment" class="form-control" placeholder="Yanıt yaz..." required>
+      <button type="submit" class="btn btn-outline-primary">Gönder</button>
     </div>
   </form>
   {% endif %}
 
-  <!-- Alt yanÄ±tlar -->
+  <!-- Alt yanıtlar -->
   <div class="reply-indent mt-3 replies-box">
     {% for reply in comment.replies.all %}
       <div class="reply-card mb-2" id="comment_{{ reply.id }}">
         <div>
           <strong>{{ reply.user }}</strong>
-          <span class="meta">â€¢ {{ reply.created_at|timesince }} ago</span>
+          <span class="meta">• {{ reply.created_at|timesince }} ago</span>
         </div>
         <div class="mt-1">{{ reply.comment }}</div>
       </div>
     {% endfor %}
   </div>
 </div>
-
