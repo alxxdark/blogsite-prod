@@ -200,19 +200,31 @@ def toggle_save_post(request, slug):
 # -----------------------
 # PROFİL
 # -----------------------
+# blogs/views.py
+
 @login_required
-def profile_edit(request):
-    profile, _ = Profile.objects.get_or_create(user=request.user)
+def profile_edit(request, username):
+    # Hangi profili düzenliyoruz?
+    target_user = get_object_or_404(User, username=username)
+
+    # Sadece sahibi (veya staff/superuser) düzenleyebilsin
+    if request.user != target_user and not (request.user.is_staff or request.user.is_superuser):
+        messages.error(request, "Bu profili düzenleme yetkin yok.")
+        return redirect("blogs:profile", username=target_user.username)
+
+    profile, _ = Profile.objects.get_or_create(user=target_user)
+
     if request.method == "POST":
         form = ProfileForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
             form.save()
             messages.success(request, "Profilin güncellendi.")
-            return redirect("blogs:profile", username=request.user.username)
+            return redirect("blogs:profile", username=target_user.username)
         messages.error(request, "Formda hatalar var. Lütfen kontrol et.")
     else:
         form = ProfileForm(instance=profile)
-    return render(request, "profile_edit.html", {"form": form})
+
+    return render(request, "profile_edit.html", {"form": form, "profile_user": target_user})
 
 
 @login_required
