@@ -226,6 +226,11 @@ def profile_edit(request, username):
 
     return render(request, "profile_edit.html", {"form": form, "profile_user": target_user})
 
+@login_required
+def profile_edit_me(request):
+    # Kullanıcı adını otomatik ekleyip doğru route'a yönlendir
+    return redirect("blogs:profile_edit", username=request.user.username)
+
 
 @login_required
 def profile_view(request, username):

@@ -10,10 +10,12 @@ urlpatterns = [
     path("<slug:slug>/save/", views.toggle_save_post, name="toggle_save_post"),
     path("profile/<str:username>/", views.profile_view, name="profile"),
     path("profile/<str:username>/edit/", views.profile_edit, name="profile_edit"),
+    path("profile/edit/", views.profile_edit_me, name="profile_edit_me"),
     path("search/", views.search, name="search"),
     path("about/", views.about, name="about"),
     path("contact/", views.contact_view, name="contact"),
     path("page/<slug:slug>/", views.static_page, name="static_page"),
     path("post/<int:post_id>/comments/add/", views.comment_add, name="comment_add"),
     path("<slug:slug>/", views.blogs, name="blogs"),
+    
 ]

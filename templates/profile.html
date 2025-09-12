@@ -97,8 +97,12 @@
   {% endif %}
   
 {% if request.user.is_authenticated and request.user.username == profile_user.username %}
-  <a href="{% url 'blogs:profile_edit' %}" class="btn btn-outline-primary btn-sm">Edit Profile</a>
+  <a class="btn btn-sm btn-outline-secondary"
+     href="{% url 'blogs:profile_edit' profile_user.username %}">
+     Profili Düzenle
+  </a>
 {% endif %}
+
 
   <!-- Saved Posts -->
   <h3 class="mt-4">Saved Posts</h3>
