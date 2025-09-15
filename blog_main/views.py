@@ -22,6 +22,13 @@ def home_smoke(request):
 
 # ---- Home ----
 def home(request):
+    """
+    Anasayfa. Kayıt sonrası tek seferlik 'new_user' bayrağını
+    session'dan tüketir (pop) ve template'e geçirir.
+    """
+    # --- Sadece bir kez çalışması için flag'i tüketiyoruz:
+    new_user = request.session.pop("new_user", False)
+
     featured_posts = Blog.objects.filter(
         is_featured=True, status="Published"
     ).order_by("-updated_at")
@@ -35,18 +42,25 @@ def home(request):
     return render(request, "home.html", {
         "featured_posts": featured_posts,
         "page_obj": page_obj,
+        "new_user": new_user,          # <-- template burada görecek
     })
 
 
 # ---- Auth ----
 def register(request):
+    """
+    Kayıt: kullanıcıyı oluştur, otomatik giriş yap,
+    'new_user' bayrağını set et, anasayfaya yönlendir.
+    """
     if request.method == "POST":
         form = RegistrationForm(request.POST)
         if form.is_valid():
-            user = form.save()             # User oluştur
-            auth_login(request, user)      # Otomatik giriş
-            messages.success(request, "Aramıza hoş geldin! 🎉")
-            return redirect("home")        # Anasayfaya yönlendir
+            user = form.save()                  # User oluştur
+            auth_login(request, user)           # Otomatik login
+            request.session["new_user"] = True  # <-- sadece bir kez tetiklenecek bayrak
+            # İstersen mesaj da bırakabilirsin; popup zaten çıkacak.
+            # messages.success(request, "Aramıza hoş geldin! 🎉")
+            return redirect("home")             # Anasayfa
         messages.error(request, "Formda hatalar var. Lütfen kontrol et.")
     else:
         form = RegistrationForm()
@@ -54,6 +68,9 @@ def register(request):
 
 
 def login_view(request):
+    """
+    Normal login. Burada 'new_user' set etmiyoruz; sadece kayıt olana özel.
+    """
     if request.method == "POST":
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
