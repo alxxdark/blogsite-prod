@@ -7,8 +7,6 @@ from django.contrib.auth import views as auth_views
 from django.views.generic import RedirectView
 
 from . import views
-
-# Sitemaps
 from django.contrib.sitemaps.views import sitemap
 from blogs.sitemaps import BlogSitemap
 
@@ -17,7 +15,7 @@ sitemaps = {"blogs": BlogSitemap}
 urlpatterns = [
     path("admin/", admin.site.urls),
 
-    # Health checks
+    # Health
     path("healthz", views.healthz, name="healthz"),
     path("_home_smoke", views.home_smoke, name="home_smoke"),
 
@@ -29,7 +27,7 @@ urlpatterns = [
 
     # Auth
     path("register/", views.register, name="register"),
-    path("login/", views.login, name="login"),
+    path("login/", views.login_view, name="login"),   # <— login_view
     path("logout/", views.logout, name="logout"),
 
     # Dashboard
@@ -56,8 +54,7 @@ if settings.DEBUG:
     elif getattr(settings, "STATIC_ROOT", None):
         urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
-if settings.DEBUG:
-    urlpatterns += [path("create-superuser/", views.create_superuser_view)]
-
+# create_superuser route’u PROD güvenliği için kaldırıldı
+# handler’lar aynı
 handler404 = "django.views.defaults.page_not_found"
 handler500 = "django.views.defaults.server_error"

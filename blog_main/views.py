@@ -1,13 +1,16 @@
-from django.shortcuts import redirect, render
-from django.contrib.auth import login
-from blogs.models import Blog  # Category importu kullanılmıyordu
-from .forms import RegistrationForm
-from django.contrib.auth.forms import AuthenticationForm
-from django.contrib import auth
-from django.core.paginator import Paginator
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
+from django.core.paginator import Paginator
+from django.contrib import messages
+from django.contrib import auth
+from django.contrib.auth import login as auth_login
+from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 from django.conf import settings
+
+from blogs.models import Blog
+from .forms import RegistrationForm
+
 
 # ---- Health endpoints ----
 def healthz(request):
@@ -16,67 +19,56 @@ def healthz(request):
 def home_smoke(request):
     return HttpResponse("home ok", content_type="text/plain", status=200)
 
+
 # ---- Home ----
 def home(request):
-    # Her istek başına loaddata üretim ortamında tehlikelidir ve yavaştır;
-    # ayrıca dosya bulunamazsa 500 atabilir. Bu yüzden kaldırdım.
-    featured_posts = Blog.objects.filter(is_featured=True, status="Published").order_by("-updated_at")
-    recent_posts_list = Blog.objects.filter(is_featured=False, status="Published").order_by("-updated_at")
+    featured_posts = Blog.objects.filter(
+        is_featured=True, status="Published"
+    ).order_by("-updated_at")
 
-    paginator = Paginator(recent_posts_list, 5)  # 5'erli sayfa
-    page_number = request.GET.get("page")
-    page_obj = paginator.get_page(page_number)
+    recent_posts_qs = Blog.objects.filter(
+        is_featured=False, status="Published"
+    ).order_by("-updated_at")
 
-    context = {
+    page_obj = Paginator(recent_posts_qs, 5).get_page(request.GET.get("page"))
+
+    return render(request, "home.html", {
         "featured_posts": featured_posts,
         "page_obj": page_obj,
-    }
-    return render(request, "home.html", context)
+    })
+
 
 # ---- Auth ----
 def register(request):
     if request.method == "POST":
         form = RegistrationForm(request.POST)
         if form.is_valid():
-            user = form.save()       # kullanıcı oluştur
-            login(request, user)     # otomatik giriş yaptır
-            return redirect("home")  # anasayfaya yönlendir
-        else:
-            print(form.errors)
+            user = form.save()             # User oluştur
+            auth_login(request, user)      # Otomatik giriş
+            messages.success(request, "Aramıza hoş geldin! 🎉")
+            return redirect("home")        # Anasayfaya yönlendir
+        messages.error(request, "Formda hatalar var. Lütfen kontrol et.")
     else:
         form = RegistrationForm()
-    context = {"form": form}
-    return render(request, "register.html", context)
+    return render(request, "register.html", {"form": form})
 
-def login(request):
+
+def login_view(request):
     if request.method == "POST":
-        form = AuthenticationForm(request, request.POST)
+        form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
-            username = form.cleaned_data["username"]
-            password = form.cleaned_data["password"]
-            user = auth.authenticate(username=username, password=password)
-            if user is not None:
-                auth.login(request, user)
-                return redirect("dashboard")
-    form = AuthenticationForm()
-    context = {"form": form}
-    return render(request, "login.html", context)
+            user = form.get_user()
+            auth.login(request, user)
+            messages.success(request, f"Tekrar hoş geldin, {user.username}!")
+            nxt = request.GET.get("next") or request.POST.get("next")
+            return redirect(nxt or "home")
+        messages.error(request, "Kullanıcı adı veya şifre hatalı.")
+    else:
+        form = AuthenticationForm(request)
+    return render(request, "login.html", {"form": form})
+
 
 def logout(request):
     auth.logout(request)
+    messages.info(request, "Çıkış yapıldı.")
     return redirect("home")
-
-# ---- Geçici superuser endpoint (PROD'DA KAPAT) ----
-def create_superuser_view(request):
-    # Güvenlik: sadece DEBUG modunda ve yalnızca GET/POST'ta çalışsın.
-    if not settings.DEBUG:
-        return HttpResponse("Disabled on production.", status=403)
-
-    username = "admin"
-    email = "sagnak.1903@outlook.com"
-    password = "Admin.Strong.Pass.129946"
-
-    if not User.objects.filter(username=username).exists():
-        User.objects.create_superuser(username, email, password)
-        return HttpResponse("✅ Süperuser oluşturuldu.")
-    return HttpResponse("ℹ️ Zaten var.")
