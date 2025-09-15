@@ -1,4 +1,5 @@
 from django.shortcuts import redirect, render
+from django.contrib.auth import login
 from blogs.models import Blog  # Category importu kullanılmıyordu
 from .forms import RegistrationForm
 from django.contrib.auth.forms import AuthenticationForm
