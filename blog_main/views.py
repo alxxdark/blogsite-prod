@@ -37,8 +37,9 @@ def register(request):
     if request.method == "POST":
         form = RegistrationForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect("register")
+            user = form.save()       # kullanıcı oluştur
+            login(request, user)     # otomatik giriş yaptır
+            return redirect("home")  # anasayfaya yönlendir
         else:
             print(form.errors)
     else:
