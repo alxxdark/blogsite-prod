@@ -87,38 +87,33 @@
     </header>
 </div>
 
-<nav class="navbar navbar-light bg-light">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
   <div class="container-fluid">
+    <!-- Bootstrap default hamburger -->
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMenu"
       aria-controls="navbarMenu" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="toggler-line"></span>
-      <span class="toggler-line"></span>
-      <span class="toggler-line"></span>
+      <span class="navbar-toggler-icon"></span>
     </button>
+
     <div class="collapse navbar-collapse" id="navbarMenu">
       <ul class="navbar-nav">
-        <li class="nav-item">
-          <a class="nav-link" data-bs-toggle="collapse" href="#categorySubMenu" role="button" aria-expanded="false" aria-controls="categorySubMenu">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="categoryDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             Categories
           </a>
-          <div class="collapse" id="categorySubMenu">
-            <ul class="navbar-nav ms-3">
-              {% for cat in categories %}
-              <li class="nav-item">
-                <!-- BURASI: kategori linki blogs:posts_by_category -->
-                <a class="nav-link" href="{% url 'blogs:posts_by_category' cat.id %}">{{ cat.category_name }}</a>
-              </li>
-              {% endfor %}
-            </ul>
-          </div>
+          <ul class="dropdown-menu" aria-labelledby="categoryDropdown">
+            {% for cat in categories %}
+              <li><a class="dropdown-item" href="{% url 'blogs:posts_by_category' cat.id %}">{{ cat.category_name }}</a></li>
+            {% endfor %}
+          </ul>
         </li>
-        <!-- BURASI: static sayfalar blogs namespace -->
         <li class="nav-item"><a class="nav-link" href="{% url 'blogs:about' %}">About</a></li>
         <li class="nav-item"><a class="nav-link" href="{% url 'blogs:contact' %}">Contact</a></li>
       </ul>
     </div>
   </div>
 </nav>
+
 
 <div class="container">
     {% block content %}{% endblock %}
