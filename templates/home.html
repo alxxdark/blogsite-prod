@@ -78,31 +78,4 @@
   </aside>
 </div>
 
-{# --- Kayıt Sonrası Tek-Seferlik Popup + Konfeti --- #}
-{% if new_user %}
-  <!-- Gerekli kütüphaneler -->
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
-
-  <!-- Tetikleyici -->
-  <script>
-    // Popup
-    Swal.fire({
-      title: "🎉 Hoş geldiniz!",
-      text: "Aramıza katıldığınız için teşekkürler.",
-      icon: "success",
-      showConfirmButton: false,
-      timer: 2600
-    });
-
-    // Konfeti (iki kısa patlama)
-    (function burst() {
-      confetti({ particleCount: 120, spread: 70, origin: { y: 0.6 } });
-      setTimeout(function () {
-        confetti({ particleCount: 80, spread: 90, origin: { y: 0.6 } });
-      }, 400);
-    })();
-  </script>
-{% endif %}
-
 {% endblock %}

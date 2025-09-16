@@ -37,7 +37,7 @@
       animation: blogend-pulse 2s infinite;
     }
 
-    /* Hamburger menü */
+    /* Hamburger menü (solda, 3 çizgi, açılınca X) */
     .navbar-toggler{
       display:flex;
       flex-direction:column;
@@ -124,7 +124,7 @@
   <!-- Navbar -->
   <nav class="navbar navbar-light bg-light">
     <div class="container-fluid">
-      <!-- HAMBURGER -->
+      <!-- HAMBURGER (solda) -->
       <button class="navbar-toggler collapsed" type="button"
               data-bs-toggle="collapse" data-bs-target="#navbarMenu"
               aria-controls="navbarMenu" aria-expanded="false" aria-label="Toggle navigation">
@@ -183,6 +183,7 @@
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 
 <script>
+  // Loading & Cookie
   window.addEventListener('load', function() {
     document.getElementById('loading-screen').style.display = 'none';
     document.getElementById('main-content').style.display = 'block';
@@ -194,6 +195,7 @@
   function declineCookies(){ localStorage.setItem("cookieDeclined",true); document.getElementById("cookieModal").style.display="none"; }
 </script>
 
+<!-- Django messages -> SweetAlert (genel) -->
 {% if messages %}
 <script>
   (function(){
@@ -206,6 +208,7 @@
 </script>
 {% endif %}
 
+<!-- Kayıt sonrası tek-seferlik popup + konfeti -->
 {% if new_user %}
 <script>
   Swal.fire({title:"🎉 Hoş geldiniz!",text:"Aramıza katıldığınız için teşekkürler.",icon:"success",showConfirmButton:false,timer:2600});
