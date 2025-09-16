@@ -2,87 +2,82 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <title>Blogend</title>
-    <link rel="icon" type="image/png" href="{% static 'images/ejderha_logo.png' %}">
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Bootstrap 5.3.2 CDN -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <title>Blogend</title>
+  <link rel="icon" type="image/png" href="{% static 'images/ejderha_logo.png' %}">
 
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css?family=Playfair+Display:700,900" rel="stylesheet">
+  <!-- Bootstrap 5.3.2 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- Custom CSS -->
-    <link href="{% static 'css/blog.css' %}" rel="stylesheet">
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Playfair+Display:700,900" rel="stylesheet">
 
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <!-- Custom CSS -->
+  <link href="{% static 'css/blog.css' %}" rel="stylesheet">
 
-    <link rel="manifest" href="{% static 'manifest.json' %}"> 
-    <meta name="theme-color" content="#00bcd4">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
-    <style>
-        @keyframes blogend-pulse {
-            0%   { color: #00bcd4; text-shadow: 0 0 0px #00bcd4; }
-            50%  { color: #00e5ff; text-shadow: 0 0 12px #00e5ff; }
-            100% { color: #00bcd4; text-shadow: 0 0 0px #00bcd4; }
-        }
-        .blogend-pulse {
-            font-family: 'Segoe UI', sans-serif;
-            font-size: 2rem;
-            text-align: center;
-            animation: blogend-pulse 2s infinite;
-            transition: all 0.3s ease-in-out;
-        }
+  <meta name="theme-color" content="#00bcd4">
 
-        .cookie-modal {
-            position: fixed; bottom: 20px; right: 20px; background-color: #1e1e1e; color: #e0e0e0;
-            padding: 20px; border: 1px solid #00bcd4; border-radius: 10px; z-index: 9999; max-width: 350px;
-        }
-        .cookie-modal button { margin-top: 10px; margin-right: 5px; }
+  <style>
+    /* Logo animasyonu */
+    @keyframes blogend-pulse {
+      0%   { color: #00bcd4; text-shadow: 0 0 0px #00bcd4; }
+      50%  { color: #00e5ff; text-shadow: 0 0 12px #00e5ff; }
+      100% { color: #00bcd4; text-shadow: 0 0 0px #00bcd4; }
+    }
+    .blogend-pulse {
+      font-family: 'Segoe UI', sans-serif;
+      font-size: 2rem;
+      text-align: center;
+      animation: blogend-pulse 2s infinite;
+    }
 
-        /* === HAMBURGER - turkuaz & X animasyonu === */
-        .navbar { z-index: 1030; }
-        .navbar-toggler{
-          border:1px solid rgba(0,212,230,.6);
-          background:rgba(0,212,230,.08);
-          border-radius:10px;
-          padding:.35rem .5rem;
-          outline:none !important;
-        }
-        .navbar-toggler:focus{
-          box-shadow:0 0 0 .25rem rgba(0,188,212,.35);
-        }
+    /* Hamburger menü */
+    .navbar-toggler{
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      width:44px;
+      height:36px;
+      border:1px solid rgba(0,212,230,.6);
+      background:rgba(0,212,230,.08);
+      border-radius:10px;
+      padding:0;
+      outline:none !important;
+    }
+    .navbar-toggler:focus{
+      box-shadow:0 0 0 .25rem rgba(0,188,212,.35);
+    }
+    .toggler-line{
+      display:block;
+      width:28px;
+      height:3px;
+      background:#00d4e6;
+      margin:4px 0;
+      border-radius:2px;
+      transition: transform .22s ease, opacity .22s ease, background-color .22s ease;
+    }
+    .navbar-toggler.collapsed .toggler-line { background:#00d4e6; }
+    .navbar-toggler:not(.collapsed) .toggler-line { background:#00bcd4; }
+    .navbar-toggler:not(.collapsed) .toggler-line:nth-child(1){ transform: translateY(7px) rotate(45deg); }
+    .navbar-toggler:not(.collapsed) .toggler-line:nth-child(2){ opacity:0; }
+    .navbar-toggler:not(.collapsed) .toggler-line:nth-child(3){ transform: translateY(-7px) rotate(-45deg); }
 
-        /* Üç çizgi */
-        .toggler-line{
-          display:block;
-          width:26px;
-          height:3px;
-          background:#00d4e6;   /* turkuaz */
-          margin:5px 0;
-          border-radius:2px;
-          transition: transform .22s ease, opacity .22s ease, background-color .22s ease;
-        }
-        /* Açılınca X animasyonu ve renk farkı */
-        .navbar-toggler.collapsed .toggler-line { background:#00d4e6; }
-        .navbar-toggler:not(.collapsed) .toggler-line { background:#00bcd4; }
-        .navbar-toggler:not(.collapsed) .toggler-line:nth-child(1){
-          transform: translateY(8px) rotate(45deg);
-        }
-        .navbar-toggler:not(.collapsed) .toggler-line:nth-child(2){
-          opacity:0;
-        }
-        .navbar-toggler:not(.collapsed) .toggler-line:nth-child(3){
-          transform: translateY(-8px) rotate(-45deg);
-        }
-    </style>
+    /* Cookie modal */
+    .cookie-modal {
+      position: fixed; bottom: 20px; right: 20px; background-color: #1e1e1e; color: #e0e0e0;
+      padding: 20px; border: 1px solid #00bcd4; border-radius: 10px; z-index: 9999; max-width: 350px;
+    }
+  </style>
 </head>
 <body>
-<!-- Loading Screen -->
+<!-- Loading -->
 <div id="loading-screen">
   <div class="loader">
     <div class="spinner">
@@ -92,105 +87,102 @@
 </div>
 
 <div id="main-content" style="display:none;">
-<div class="container-fluid">
-    <header class="blog-header py-3">
-        <div class="row flex-nowrap justify-content-between align-items-center">
-            <div class="col-4 pt-1" style="padding-left: 0;">
-                <a class="blog-header-logo text-dark" href="{% url 'home' %}">
-                    <img src="{% static 'images/ejderha_logo.png' %}" alt="Blogend" style="height: 200px; margin-left: 0;">
-                </a>
-            </div>
-            <div class="col-4">
-                <form action="{% url 'blogs:search' %}" method="GET">
-                    <div class="input-group">
-                        <input class="form-control" type="text" name="keyword" value="{{ keyword }}" placeholder="Enter search term..." aria-label="Enter search term..." aria-describedby="button-search" />
-                        <button type="submit" class="btn btn-warning" id="button-search">Go!</button>
-                    </div>
-                </form>
-                <div style="text-align: center; margin-top: 35px;">
-                    <a href="{% url 'home' %}" style="text-decoration: none;">
-                        <h2 class="blogend-pulse">Blogend</h2>
-                    </a>
-                </div>
-            </div>
-            <div class="col-4 d-flex justify-content-end align-items-center" style="margin-right: 20px;">
-                {% if not user.is_authenticated %}
-                  <a class="btn btn-sm btn-warning" href="{% url 'login' %}">Login</a> &nbsp;
-                  <a class="btn btn-sm btn-outline-secondary" href="{% url 'register' %}">Register</a>
-                {% else %}
-                  <a href="{% url 'dashboard' %}" class="btn btn-warning text-white">Dashboard</a>
-                  &emsp;
-                  <a href="{% url 'logout' %}" class="btn btn-warning text-white">Logout</a>
-                {% endif %}
-            </div>
-        </div>
-    </header>
-</div>
-
-<nav class="navbar navbar-light bg-light">
   <div class="container-fluid">
-    <!-- Üç çizgili hamburger -->
-    <button class="navbar-toggler collapsed ms-auto" type="button"
-      data-bs-toggle="collapse" data-bs-target="#navbarMenu"
-      aria-controls="navbarMenu" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="toggler-line"></span>
-      <span class="toggler-line"></span>
-      <span class="toggler-line"></span>
-    </button>
-
-    <div class="collapse navbar-collapse" id="navbarMenu">
-      <ul class="navbar-nav">
-        <li class="nav-item">
-          <a class="nav-link" data-bs-toggle="collapse" href="#categorySubMenu"
-             role="button" aria-expanded="false" aria-controls="categorySubMenu">
-            Categories
+    <header class="blog-header py-3">
+      <div class="row flex-nowrap justify-content-between align-items-center">
+        <div class="col-4 pt-1" style="padding-left:0;">
+          <a class="blog-header-logo text-dark" href="{% url 'home' %}">
+            <img src="{% static 'images/ejderha_logo.png' %}" alt="Blogend" style="height: 200px;">
           </a>
-          <div class="collapse" id="categorySubMenu">
-            <ul class="navbar-nav ms-3">
-              {% for cat in categories %}
-                <li class="nav-item">
-                  <a class="nav-link" href="{% url 'blogs:posts_by_category' cat.id %}">{{ cat.category_name }}</a>
-                </li>
-              {% endfor %}
-            </ul>
+        </div>
+        <div class="col-4">
+          <form action="{% url 'blogs:search' %}" method="GET">
+            <div class="input-group">
+              <input class="form-control" type="text" name="keyword" value="{{ keyword }}" placeholder="Enter search term...">
+              <button type="submit" class="btn btn-warning">Go!</button>
+            </div>
+          </form>
+          <div style="text-align:center; margin-top:35px;">
+            <a href="{% url 'home' %}" style="text-decoration:none;">
+              <h2 class="blogend-pulse">Blogend</h2>
+            </a>
           </div>
-        </li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'blogs:about' %}">About</a></li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'blogs:contact' %}">Contact</a></li>
-      </ul>
-    </div>
+        </div>
+        <div class="col-4 d-flex justify-content-end align-items-center" style="margin-right:20px;">
+          {% if not user.is_authenticated %}
+            <a class="btn btn-sm btn-warning" href="{% url 'login' %}">Login</a>&nbsp;
+            <a class="btn btn-sm btn-outline-secondary" href="{% url 'register' %}">Register</a>
+          {% else %}
+            <a href="{% url 'dashboard' %}" class="btn btn-warning text-white">Dashboard</a>&emsp;
+            <a href="{% url 'logout' %}" class="btn btn-warning text-white">Logout</a>
+          {% endif %}
+        </div>
+      </div>
+    </header>
   </div>
-</nav>
 
-<div class="container">
+  <!-- Navbar -->
+  <nav class="navbar navbar-light bg-light">
+    <div class="container-fluid">
+      <!-- HAMBURGER -->
+      <button class="navbar-toggler collapsed" type="button"
+              data-bs-toggle="collapse" data-bs-target="#navbarMenu"
+              aria-controls="navbarMenu" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="toggler-line"></span>
+        <span class="toggler-line"></span>
+        <span class="toggler-line"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarMenu">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="collapse" href="#categorySubMenu" role="button">
+              Categories
+            </a>
+            <div class="collapse" id="categorySubMenu">
+              <ul class="navbar-nav ms-3">
+                {% for cat in categories %}
+                  <li class="nav-item">
+                    <a class="nav-link" href="{% url 'blogs:posts_by_category' cat.id %}">{{ cat.category_name }}</a>
+                  </li>
+                {% endfor %}
+              </ul>
+            </div>
+          </li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'blogs:about' %}">About</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'blogs:contact' %}">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
     {% block content %}{% endblock %}
+  </div>
+
+  <footer class="blog-footer">
+    <p>Blogend built by <a href="{% url 'blogs:about' %}">Ali Sağnak</a></p>
+  </footer>
 </div>
 
-<footer class="blog-footer">
-    <p>Blogend built with by <a href="{% url 'blogs:about' %}">Ali Sağnak</a></p>
-</footer>
-</div>
-
-<div style="text-align: center; margin-bottom: 30px;">
-    <a href="/privacy-policy/" style="color: #00bcd4; text-decoration: none;">Privacy Policy</a>
+<div style="text-align:center; margin-bottom:30px;">
+  <a href="/privacy-policy/" style="color:#00bcd4; text-decoration:none;">Privacy Policy</a>
 </div>
 
 <div id="cookieModal" class="cookie-modal" style="display:none;">
-  <p>We use cookies to personalize content and analyze our traffic. You can accept, reject, or manage your preferences.</p>
+  <p>We use cookies to personalize content and analyze our traffic.</p>
   <button class="btn btn-primary btn-sm" onclick="acceptCookies()">Accept All</button>
   <button class="btn btn-secondary btn-sm" onclick="declineCookies()">Reject All</button>
-  <button class="btn btn-outline-info btn-sm" onclick="managePreferences()">Manage Preferences</button>
 </div>
 
-<!-- Bootstrap JS Bundle CDN -->
+<!-- Bootstrap Bundle -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-<!-- SweetAlert2 + Confetti (global) -->
+<!-- SweetAlert2 + Confetti -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 
 <script>
-  // Loading & Cookie
   window.addEventListener('load', function() {
     document.getElementById('loading-screen').style.display = 'none';
     document.getElementById('main-content').style.display = 'block';
@@ -198,77 +190,29 @@
       document.getElementById('cookieModal').style.display = 'block';
     }
   });
-
-  function acceptCookies() {
-    localStorage.setItem("cookieAccepted", true);
-    document.getElementById("cookieModal").style.display = "none";
-  }
-
-  function declineCookies() {
-    localStorage.setItem("cookieDeclined", true);
-    document.getElementById("cookieModal").style.display = "none";
-  }
-
-  function managePreferences() {
-    alert("This will redirect to a preferences panel in the future.");
-  }
+  function acceptCookies(){ localStorage.setItem("cookieAccepted",true); document.getElementById("cookieModal").style.display="none"; }
+  function declineCookies(){ localStorage.setItem("cookieDeclined",true); document.getElementById("cookieModal").style.display="none"; }
 </script>
 
-<!-- Django messages -> SweetAlert (genel kullanım) -->
 {% if messages %}
 <script>
   (function(){
     const queue = [];
     {% for message in messages %}
-      queue.push({
-        icon: "{{ message.tags|default:'info' }}",
-        title: "{{ message|escapejs }}"
-      });
+      queue.push({icon:"{{ message.tags|default:'info' }}", title:"{{ message|escapejs }}"});
     {% endfor %}
-    (async () => {
-      for (const m of queue) {
-        await Swal.fire({
-          icon: m.icon,
-          title: m.title,
-          timer: 2200,
-          showConfirmButton: false
-        });
-      }
-    })();
+    (async()=>{for(const m of queue){await Swal.fire({icon:m.icon,title:m.title,timer:2200,showConfirmButton:false});}})();
   })();
 </script>
 {% endif %}
 
-<!-- Kayıt sonrası tek-seferlik popup + konfeti -->
 {% if new_user %}
 <script>
-  Swal.fire({
-    title: "🎉 Hoş geldiniz!",
-    text: "Aramıza katıldığınız için teşekkürler.",
-    icon: "success",
-    showConfirmButton: false,
-    timer: 2600
-  });
-
-  (function burst() {
-    confetti({ particleCount: 120, spread: 70, origin: { y: 0.6 } });
-    setTimeout(function () {
-      confetti({ particleCount: 80, spread: 90, origin: { y: 0.6 } });
-    }, 400);
+  Swal.fire({title:"🎉 Hoş geldiniz!",text:"Aramıza katıldığınız için teşekkürler.",icon:"success",showConfirmButton:false,timer:2600});
+  (function(){ confetti({particleCount:120,spread:70,origin:{y:0.6}});
+    setTimeout(()=>{confetti({particleCount:80,spread:90,origin:{y:0.6}});},400);
   })();
 </script>
 {% endif %}
-
-<script>
-  // Service Worker
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register("{% static 'service-worker.js' %}")
-      .then(function(registration) {
-        console.log('ServiceWorker registration successful with scope: ', registration.scope);
-      }, function(err) {
-        console.log('ServiceWorker registration failed: ', err);
-      });
-  }
-</script>
 </body>
 </html>
