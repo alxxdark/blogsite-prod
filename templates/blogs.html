@@ -8,7 +8,6 @@
   .btn-soft:hover { background:rgba(255,255,255,0.06); }
   .meta { color: #9aa0a6; font-size:.9rem; }
 
-  /* eski yorum stillerin kalsın; comments_thread kendi stillerini de getiriyor – çakışmaz */
   .comment-card { border:1px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.02); border-radius: .8rem; padding: .9rem; }
   .reply-card { border:1px dashed rgba(255,255,255,0.15); background:rgba(255,255,255,0.02); border-radius:.7rem; padding:.7rem; }
   .reply-indent { margin-left: 1.25rem; }
@@ -17,6 +16,9 @@
   .toggle-reply { cursor:pointer; font-size:.9rem; }
   .badge-pill { border:1px solid rgba(255,255,255,0.16); border-radius:999px; padding:.15rem .55rem; font-size:.75rem; color:#9aa0a6; }
   .divider { height:1px; background:rgba(255,255,255,0.08); margin:1rem 0; }
+
+  .root-form .form-text { color:#9aa0a6; }
+  .root-form img#preview-img { display:none; max-width:180px; margin-top:8px; border-radius:8px; }
   @media (max-width: 768px){ .hero-img { max-width: 100% !important; } }
 </style>
 
@@ -72,9 +74,33 @@
     <span class="badge-pill" id="comment-count">{{ comment_count }}</span>
   </div>
 
-  <!-- Yorum bölümü -->
-  {% include "comments/comments_thread.html" with post=single_blog comments=comments form=form %}
+  <!-- ✨ KÖK YORUM FORMU (GÖRSEL YÜKLEME EKLENDİ) -->
+  {% if user.is_authenticated %}
+  <form class="root-form mb-4" method="post"
+        action="{% url 'blogs:blogs' single_blog.slug %}"
+        enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label for="id_comment" class="form-label">Yorumunuz</label>
+      <textarea id="id_comment" name="comment" class="form-control" rows="4" placeholder="Yorumunuzu yazın..."></textarea>
+    </div>
 
+    <div class="mb-3">
+      <label for="id_image" class="form-label">Görsel ekle (opsiyonel)</label>
+      <input type="file" class="form-control" id="id_image" name="image"
+             accept="image/png,image/jpeg,image/webp,image/gif">
+      <div class="form-text">PNG, JPG, WEBP, GIF — en fazla 5MB.</div>
+      <img id="preview-img" alt="Önizleme">
+    </div>
+
+    <button type="submit" class="btn btn-warning">Yorum Yap</button>
+  </form>
+  {% else %}
+    <div class="alert alert-info">Yorum yapmak için <a href="{% url 'login' %}">giriş yapın</a>.</div>
+  {% endif %}
+
+  <!-- Mevcut yorumlar + yanıt formları -->
+  {% include "comments/comments_thread.html" with post=single_blog comments=comments form=form %}
 </div>
 
 <script>
@@ -148,5 +174,18 @@
       }
     });
   }
+
+  /* Görsel önizleme (kök yorum formu) */
+  (function(){
+    const fileInput = document.getElementById('id_image');
+    const preview   = document.getElementById('preview-img');
+    if (!fileInput || !preview) return;
+    fileInput.addEventListener('change', e => {
+      const f = e.target.files && e.target.files[0];
+      if (!f || !/^image\//.test(f.type)) { preview.style.display='none'; preview.src=''; return; }
+      preview.src = URL.createObjectURL(f);
+      preview.style.display = 'block';
+    });
+  })();
 </script>
 {% endblock %}
