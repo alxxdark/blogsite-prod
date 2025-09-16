@@ -30,14 +30,53 @@
             50%  { color: #00e5ff; text-shadow: 0 0 12px #00e5ff; }
             100% { color: #00bcd4; text-shadow: 0 0 0px #00bcd4; }
         }
-        .blogend-pulse { font-family: 'Segoe UI', sans-serif; font-size: 2rem; text-align: center; animation: blogend-pulse 2s infinite; transition: all 0.3s ease-in-out; }
+        .blogend-pulse {
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 2rem;
+            text-align: center;
+            animation: blogend-pulse 2s infinite;
+            transition: all 0.3s ease-in-out;
+        }
 
         .cookie-modal {
             position: fixed; bottom: 20px; right: 20px; background-color: #1e1e1e; color: #e0e0e0;
             padding: 20px; border: 1px solid #00bcd4; border-radius: 10px; z-index: 9999; max-width: 350px;
         }
         .cookie-modal button { margin-top: 10px; margin-right: 5px; }
-        .toggler-line { display:block; width:22px; height:2px; background:#333; margin:4px 0; }
+
+        /* === HAMBURGER - turkuaz & X animasyonu === */
+        .navbar { z-index: 1030; }
+        .navbar-toggler {
+          border: none;
+          padding: .35rem .5rem;
+          outline: none !important;
+        }
+        .navbar-toggler:focus {
+          box-shadow: 0 0 0 .25rem rgba(0,188,212,.35);
+        }
+        .toggler-line{
+          display:block;
+          width:26px;          /* çizgi uzunluğu */
+          height:2px;
+          background:#00d4e6;  /* kapalıyken turkuaz */
+          margin:5px 0;
+          border-radius:2px;
+          transition: transform .2s ease, opacity .2s ease, background-color .2s ease;
+        }
+        /* açık/kapalı renk farkı */
+        .navbar-toggler.collapsed .toggler-line { background:#00d4e6; }
+        .navbar-toggler:not(.collapsed) .toggler-line { background:#00bcd4; }
+
+        /* açıkken X animasyonu */
+        .navbar-toggler:not(.collapsed) .toggler-line:nth-child(1){
+          transform: translateY(7px) rotate(45deg);
+        }
+        .navbar-toggler:not(.collapsed) .toggler-line:nth-child(2){
+          opacity:0;
+        }
+        .navbar-toggler:not(.collapsed) .toggler-line:nth-child(3){
+          transform: translateY(-7px) rotate(-45deg);
+        }
     </style>
 </head>
 <body>
@@ -87,25 +126,32 @@
     </header>
 </div>
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+<nav class="navbar navbar-light bg-light">
   <div class="container-fluid">
-    <!-- Bootstrap default hamburger -->
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMenu"
+    <button class="navbar-toggler collapsed" type="button"
+      data-bs-toggle="collapse" data-bs-target="#navbarMenu"
       aria-controls="navbarMenu" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
+      <span class="toggler-line"></span>
+      <span class="toggler-line"></span>
+      <span class="toggler-line"></span>
     </button>
 
     <div class="collapse navbar-collapse" id="navbarMenu">
       <ul class="navbar-nav">
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" id="categoryDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <li class="nav-item">
+          <a class="nav-link" data-bs-toggle="collapse" href="#categorySubMenu"
+             role="button" aria-expanded="false" aria-controls="categorySubMenu">
             Categories
           </a>
-          <ul class="dropdown-menu" aria-labelledby="categoryDropdown">
-            {% for cat in categories %}
-              <li><a class="dropdown-item" href="{% url 'blogs:posts_by_category' cat.id %}">{{ cat.category_name }}</a></li>
-            {% endfor %}
-          </ul>
+          <div class="collapse" id="categorySubMenu">
+            <ul class="navbar-nav ms-3">
+              {% for cat in categories %}
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'blogs:posts_by_category' cat.id %}">{{ cat.category_name }}</a>
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
         </li>
         <li class="nav-item"><a class="nav-link" href="{% url 'blogs:about' %}">About</a></li>
         <li class="nav-item"><a class="nav-link" href="{% url 'blogs:contact' %}">Contact</a></li>
@@ -113,7 +159,6 @@
     </div>
   </div>
 </nav>
-
 
 <div class="container">
     {% block content %}{% endblock %}
