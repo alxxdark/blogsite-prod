@@ -46,36 +46,38 @@
 
         /* === HAMBURGER - turkuaz & X animasyonu === */
         .navbar { z-index: 1030; }
-        .navbar-toggler {
-          border:1px solid rgba(0,212,230,.6);   /* çerçeve */
-          background:rgba(0,212,230,.08);        /* hafif zemin */
-          border-radius:8px;
+        .navbar-toggler{
+          border:1px solid rgba(0,212,230,.6);
+          background:rgba(0,212,230,.08);
+          border-radius:10px;
           padding:.35rem .5rem;
+          outline:none !important;
         }
-        .navbar-toggler:focus {
-          box-shadow: 0 0 0 .25rem rgba(0,188,212,.35);
+        .navbar-toggler:focus{
+          box-shadow:0 0 0 .25rem rgba(0,188,212,.35);
         }
+
+        /* Üç çizgi */
         .toggler-line{
           display:block;
           width:26px;
           height:3px;
-          background:#00d4e6;   /* <-- turkuaz, koyu zeminde net */
+          background:#00d4e6;   /* turkuaz */
           margin:5px 0;
           border-radius:2px;
+          transition: transform .22s ease, opacity .22s ease, background-color .22s ease;
         }
-        /* açık/kapalı renk farkı */
+        /* Açılınca X animasyonu ve renk farkı */
         .navbar-toggler.collapsed .toggler-line { background:#00d4e6; }
         .navbar-toggler:not(.collapsed) .toggler-line { background:#00bcd4; }
-
-        /* açıkken X animasyonu */
         .navbar-toggler:not(.collapsed) .toggler-line:nth-child(1){
-          transform: translateY(7px) rotate(45deg);
+          transform: translateY(8px) rotate(45deg);
         }
         .navbar-toggler:not(.collapsed) .toggler-line:nth-child(2){
           opacity:0;
         }
         .navbar-toggler:not(.collapsed) .toggler-line:nth-child(3){
-          transform: translateY(-7px) rotate(-45deg);
+          transform: translateY(-8px) rotate(-45deg);
         }
     </style>
 </head>
@@ -99,7 +101,6 @@
                 </a>
             </div>
             <div class="col-4">
-                <!-- BURASI: search artık blogs:search -->
                 <form action="{% url 'blogs:search' %}" method="GET">
                     <div class="input-group">
                         <input class="form-control" type="text" name="keyword" value="{{ keyword }}" placeholder="Enter search term..." aria-label="Enter search term..." aria-describedby="button-search" />
@@ -128,7 +129,8 @@
 
 <nav class="navbar navbar-light bg-light">
   <div class="container-fluid">
-    <button class="navbar-toggler collapsed" type="button"
+    <!-- Üç çizgili hamburger -->
+    <button class="navbar-toggler collapsed ms-auto" type="button"
       data-bs-toggle="collapse" data-bs-target="#navbarMenu"
       aria-controls="navbarMenu" aria-expanded="false" aria-label="Toggle navigation">
       <span class="toggler-line"></span>
@@ -219,7 +221,7 @@
     const queue = [];
     {% for message in messages %}
       queue.push({
-        icon: "{{ message.tags|default:'info' }}",   // success | info | warning | error
+        icon: "{{ message.tags|default:'info' }}",
         title: "{{ message|escapejs }}"
       });
     {% endfor %}
@@ -240,7 +242,6 @@
 <!-- Kayıt sonrası tek-seferlik popup + konfeti -->
 {% if new_user %}
 <script>
-  // Hoş geldiniz pop-up
   Swal.fire({
     title: "🎉 Hoş geldiniz!",
     text: "Aramıza katıldığınız için teşekkürler.",
@@ -249,7 +250,6 @@
     timer: 2600
   });
 
-  // Konfeti (iki kısa patlama)
   (function burst() {
     confetti({ particleCount: 120, spread: 70, origin: { y: 0.6 } });
     setTimeout(function () {
