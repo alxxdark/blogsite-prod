@@ -9,6 +9,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.timesince import timesince
 from django.views.decorators.http import require_POST
+from django.core.paginator import Paginator  # <-- EKLENDİ
 
 from django.conf import settings
 import os
@@ -56,7 +57,7 @@ def posts_by_category(request, category_id):
 # -----------------------
 def blogs(request, slug):
     """
-    Tekil blog + yorumlar + like + kaydetme butonu.
+    Tekil blog + yorum yazma formu ÜSTTE + altta sayfalı kök yorumlar (+cevaplar).
     """
     single_blog = get_object_or_404(Blog, slug=slug, status="Published")
 
@@ -64,9 +65,9 @@ def blogs(request, slug):
     Blog.objects.filter(pk=single_blog.pk).update(view_count=F("view_count") + 1)
     single_blog.refresh_from_db(fields=["view_count"])
 
-    # Onaylı kök yorumlar (+1 seviyeye kadar onaylı cevapları önden getir)
+    # Onaylı kök yorumlar (+1 seviye onaylı cevapları prefetch)
     replies_qs = Comment.objects.filter(status=CommentStatus.APPROVED).select_related("user").order_by("created_at")
-    comments = (
+    roots_qs = (
         Comment.objects.filter(
             blog=single_blog,
             status=CommentStatus.APPROVED,
@@ -76,7 +77,7 @@ def blogs(request, slug):
         .prefetch_related(Prefetch("replies", queryset=replies_qs))
         .order_by("-created_at")
     )
-    comment_count = comments.count()
+    comment_count = roots_qs.count()
 
     # Yorum gönderimi (aynı sayfaya POST)
     if request.method == "POST":
@@ -91,7 +92,7 @@ def blogs(request, slug):
         if not text:
             if is_ajax:
                 return JsonResponse({"ok": False, "error": "empty"}, status=400)
-            return HttpResponseRedirect(reverse("blogs:blogs", args=[slug]))
+            return HttpResponseRedirect(reverse("blogs:blogs", args=[slug]) + "#comments")
 
         comment = Comment(
             blog=single_blog,
@@ -116,12 +117,12 @@ def blogs(request, slug):
                 if is_ajax:
                     return JsonResponse({"ok": False, "error": "bad_image_type"}, status=400)
                 messages.error(request, "Desteklenmeyen görsel türü.")
-                return HttpResponseRedirect(reverse("blogs:blogs", args=[slug]))
+                return HttpResponseRedirect(reverse("blogs:blogs", args=[slug]) + "#comments")
             if img.size > MAX_IMAGE_SIZE:
                 if is_ajax:
                     return JsonResponse({"ok": False, "error": "too_large"}, status=400)
                 messages.error(request, "Görsel en fazla 5 MB olmalı.")
-                return HttpResponseRedirect(reverse("blogs:blogs", args=[slug]))
+                return HttpResponseRedirect(reverse("blogs:blogs", args=[slug]) + "#comments")
             comment.image = img  # models.py'de Comment.image alanı olmalı
 
         comment.save()
@@ -138,8 +139,14 @@ def blogs(request, slug):
         if is_ajax:
             return JsonResponse(_comment_json(comment, parent_id=parent_id or None))
 
-        # Normal redirect (yeni yoruma anchor ile dön)
-        return HttpResponseRedirect(reverse("blogs:blogs", args=[slug]) + f"#comment_{comment.id}")
+        # Normal redirect (yorumlara dön)
+        return HttpResponseRedirect(reverse("blogs:blogs", args=[slug]) + "#comments")
+
+    # ---- KÖK yorumlarda sayfalama ----
+    cpage = request.GET.get("cpage", 1)
+    paginator = Paginator(roots_qs, 10)  # her sayfada 10 kök yorum
+    c_page_obj = paginator.get_page(cpage)
+    comments = c_page_obj.object_list  # sadece bu sayfanın kök yorumları
 
     # is_saved bayrağı
     is_saved = False
@@ -150,6 +157,7 @@ def blogs(request, slug):
         "single_blog": single_blog,
         "comments": comments,
         "comment_count": comment_count,
+        "c_page_obj": c_page_obj,   # <-- template'te sayfalama için
         "form": CommentForm(),
         "is_saved": is_saved,
     }
@@ -200,8 +208,6 @@ def toggle_save_post(request, slug):
 # -----------------------
 # PROFİL
 # -----------------------
-# blogs/views.py
-
 @login_required
 def profile_edit(request, username):
     # Hangi profili düzenliyoruz?

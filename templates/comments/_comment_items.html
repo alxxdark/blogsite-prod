@@ -1,0 +1,42 @@
+{# comments/_comment_items.html #}
+{% for c in comments %}
+  <div class="comment-card mb-3" id="comment_{{ c.id }}" style="border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.02);border-radius:.8rem;padding:.9rem;">
+    <div class="d-flex justify-content-between">
+      <div><strong>{{ c.user.username }}</strong></div>
+      <small class="text-muted">{{ c.created_at|timesince }} ago</small>
+    </div>
+
+    <div class="mt-2">
+      {{ c.comment|linebreaksbr }}
+      {% if c.image %}
+        <div class="mt-2">
+          <img src="{{ c.image.url }}" alt="comment image" style="max-width:220px;border-radius:8px;">
+        </div>
+      {% endif %}
+    </div>
+
+    {# Cevaplar (onaylı) #}
+    {% if c.replies.all %}
+      <div class="mt-3" style="margin-left:1.25rem;">
+        {% for r in c.replies.all %}
+          <div class="reply-card mb-2" style="border:1px dashed rgba(255,255,255,0.15);background:rgba(255,255,255,0.02);border-radius:.7rem;padding:.7rem;">
+            <div class="d-flex justify-content-between">
+              <div><strong>{{ r.user.username }}</strong></div>
+              <small class="text-muted">{{ r.created_at|timesince }} ago</small>
+            </div>
+            <div class="mt-2">
+              {{ r.comment|linebreaksbr }}
+              {% if r.image %}
+                <div class="mt-2">
+                  <img src="{{ r.image.url }}" alt="reply image" style="max-width:180px;border-radius:8px;">
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+{% empty %}
+  <div class="text-muted">Henüz yorum yok. İlk yorumu sen yaz 🎉</div>
+{% endfor %}

@@ -69,15 +69,16 @@
   <div class="divider"></div>
 
   <!-- Yorumlar başlık -->
+  <div id="comments"></div>
   <div class="d-flex align-items-center gap-2 mb-2">
     <h4 class="m-0">Comments</h4>
     <span class="badge-pill" id="comment-count">{{ comment_count }}</span>
   </div>
 
-  <!-- ✨ KÖK YORUM FORMU (GÖRSEL YÜKLEME EKLENDİ) -->
+  <!-- ✨ KÖK YORUM FORMU (GÖRSEL YÜKLEME) ÜSTTE -->
   {% if user.is_authenticated %}
   <form class="root-form mb-4" method="post"
-        action="{% url 'blogs:blogs' single_blog.slug %}"
+        action="{% url 'blogs:blogs' single_blog.slug %}#comments"
         enctype="multipart/form-data">
     {% csrf_token %}
     <div class="mb-3">
@@ -99,8 +100,33 @@
     <div class="alert alert-info">Yorum yapmak için <a href="{% url 'login' %}">giriş yapın</a>.</div>
   {% endif %}
 
-  <!-- Mevcut yorumlar + yanıt formları -->
+  <!-- Mevcut yorumlar + yanıt formları (bu sayfadaki kök yorumlar) -->
   {% include "comments/comments_thread.html" with post=single_blog comments=comments form=form %}
+
+  <!-- SAYFALAMA -->
+  {% if c_page_obj and c_page_obj.has_other_pages %}
+    <nav class="mt-3" aria-label="Comments pagination">
+      <ul class="pagination justify-content-center">
+        {% if c_page_obj.has_previous %}
+          <li class="page-item">
+            <a class="page-link" href="?cpage={{ c_page_obj.previous_page_number }}#comments">Previous</a>
+          </li>
+        {% endif %}
+        {% for p in c_page_obj.paginator.page_range %}
+          {% if p == c_page_obj.number %}
+            <li class="page-item active"><span class="page-link">{{ p }}</span></li>
+          {% elif p >= c_page_obj.number|add:'-2' and p <= c_page_obj.number|add:'2' %}
+            <li class="page-item"><a class="page-link" href="?cpage={{ p }}#comments">{{ p }}</a></li>
+          {% endif %}
+        {% endfor %}
+        {% if c_page_obj.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="?cpage={{ c_page_obj.next_page_number }}#comments">Next</a>
+          </li>
+        {% endif %}
+      </ul>
+    </nav>
+  {% endif %}
 </div>
 
 <script>
