@@ -2,63 +2,50 @@
 
 {% block content %}
 <style>
-  .post-header { border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: .75rem; margin-bottom: 1rem; }
-  .post-actions { display:flex; gap:.5rem; flex-wrap: wrap; }
+  .post-header { border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom:.75rem; margin-bottom:1rem; }
+  .post-actions { display:flex; gap:.5rem; flex-wrap:wrap; }
   .btn-soft { border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.03); padding:.4rem .7rem; border-radius:.65rem; font-size:.9rem; }
   .btn-soft:hover { background:rgba(255,255,255,0.06); }
-  .meta { color: #9aa0a6; font-size:.9rem; }
-
-  .comment-card { border:1px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.02); border-radius: .8rem; padding: .9rem; }
-  .reply-card { border:1px dashed rgba(255,255,255,0.15); background:rgba(255,255,255,0.02); border-radius:.7rem; padding:.7rem; }
-  .reply-indent { margin-left: 1.25rem; }
-  .comment-actions { display:flex; gap:.8rem; align-items:center; }
-  .link-plain { text-decoration: none; }
-  .toggle-reply { cursor:pointer; font-size:.9rem; }
-  .badge-pill { border:1px solid rgba(255,255,255,0.16); border-radius:999px; padding:.15rem .55rem; font-size:.75rem; color:#9aa0a6; }
+  .meta { color:#9aa0a6; font-size:.9rem; }
   .divider { height:1px; background:rgba(255,255,255,0.08); margin:1rem 0; }
+
+  .comment-card { border:1px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.02); border-radius:.8rem; padding:.9rem; }
+  .reply-card   { border:1px dashed rgba(255,255,255,0.15); background:rgba(255,255,255,0.02); border-radius:.7rem; padding:.7rem; }
+  .reply-indent { margin-left:1.25rem; }
+  .badge-pill   { border:1px solid rgba(255,255,255,0.16); border-radius:999px; padding:.15rem .55rem; font-size:.75rem; color:#9aa0a6; }
 
   .root-form .form-text { color:#9aa0a6; }
   .root-form img#preview-img { display:none; max-width:180px; margin-top:8px; border-radius:8px; }
-  @media (max-width: 768px){ .hero-img { max-width: 100% !important; } }
 </style>
 
 <div class="container mt-5">
+
   <!-- Başlık + Aksiyonlar -->
   <div class="post-header">
     <h1 class="mb-2">{{ single_blog.title }}</h1>
     <div class="post-actions">
-      <!-- Post beğeni -->
       <a id="like-post-btn" class="btn-soft link-plain" href="{% url 'blogs:like_post' single_blog.slug %}">
         👍 Beğen (<span id="post-like-count">{{ single_blog.likes.count }}</span>)
       </a>
-
-      <!-- Kaydet / Kaldır -->
       {% if user.is_authenticated %}
-        <a id="save-post-btn" class="btn-soft link-plain" href="{% url 'blogs:toggle_save_post' single_blog.slug %}">
-          {% if is_saved %}💾 Kaydı kaldır{% else %}💾 Kaydet{% endif %}
-        </a>
+      <a id="save-post-btn" class="btn-soft link-plain" href="{% url 'blogs:toggle_save_post' single_blog.slug %}">
+        {% if is_saved %}💾 Kaydı kaldır{% else %}💾 Kaydet{% endif %}
+      </a>
       {% endif %}
-
-      <!-- Görüntüleme -->
       <span class="btn-soft meta">👁️ {{ single_blog.view_count }}</span>
-
-      <!-- Paylaş -->
-      {% with page_url=request.build_absolute_uri page_title=single_blog.title %}
-        <button class="btn-soft" type="button" onclick="copyLink('{{ page_url|escapejs }}')">🔗 Kopyala</button>
+      {% with page_url=request.build_absolute_uri %}
+      <button class="btn-soft" type="button" onclick="copyLink('{{ page_url|escapejs }}')">🔗 Kopyala</button>
       {% endwith %}
     </div>
   </div>
 
   <!-- Kapak görseli -->
   {% if single_blog.featured_image %}
-    <img src="{{ single_blog.featured_image.url }}" alt="{{ single_blog.title }}"
-         class="img-fluid rounded mb-3 hero-img" style="max-width: 820px;">
+    <img src="{{ single_blog.featured_image.url }}" alt="{{ single_blog.title }}" class="img-fluid rounded mb-3 hero-img" style="max-width:820px;">
   {% else %}
-    <img src="/static/default-post-image.jpg" alt="Default Image"
-         class="img-fluid rounded mb-3 hero-img" style="max-width: 820px;">
+    <img src="/static/default-post-image.jpg" alt="Default Image" class="img-fluid rounded mb-3 hero-img" style="max-width:820px;">
   {% endif %}
 
-  <!-- Meta -->
   <p class="meta">Posted by <b>{{ single_blog.author }}</b> on {{ single_blog.created_at }}</p>
 
   <!-- İçerik -->
@@ -68,14 +55,14 @@
 
   <div class="divider"></div>
 
-  <!-- Yorumlar başlık -->
+  <!-- Yorum başlık -->
   <div id="comments"></div>
   <div class="d-flex align-items-center gap-2 mb-2">
     <h4 class="m-0">Comments</h4>
     <span class="badge-pill" id="comment-count">{{ comment_count }}</span>
   </div>
 
-  <!-- ✨ KÖK YORUM FORMU (GÖRSEL YÜKLEME) ÜSTTE -->
+  <!-- KÖK YORUM FORMU (TEK!) -->
   {% if user.is_authenticated %}
   <form class="root-form mb-4" method="post"
         action="{% url 'blogs:blogs' single_blog.slug %}#comments"
@@ -88,8 +75,7 @@
 
     <div class="mb-3">
       <label for="id_image" class="form-label">Görsel ekle (opsiyonel)</label>
-      <input type="file" class="form-control" id="id_image" name="image"
-             accept="image/png,image/jpeg,image/webp,image/gif">
+      <input type="file" class="form-control" id="id_image" name="image" accept="image/png,image/jpeg,image/webp,image/gif">
       <div class="form-text">PNG, JPG, WEBP, GIF — en fazla 5MB.</div>
       <img id="preview-img" alt="Önizleme">
     </div>
@@ -100,8 +86,8 @@
     <div class="alert alert-info">Yorum yapmak için <a href="{% url 'login' %}">giriş yapın</a>.</div>
   {% endif %}
 
-  <!-- Mevcut yorumlar + yanıt formları (bu sayfadaki kök yorumlar) -->
-  {% include "comments/comments_thread.html" with post=single_blog comments=comments form=form %}
+  <!-- SADECE LİSTE + CEVAP FORMLARI -->
+  {% include "comments/comments_thread.html" with post=single_blog comments=comments %}
 
   <!-- SAYFALAMA -->
   {% if c_page_obj and c_page_obj.has_other_pages %}
@@ -130,87 +116,49 @@
 </div>
 
 <script>
-  /* CSRF cookie */
-  function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-      const cookies = document.cookie.split(';');
-      for (let i = 0; i < cookies.length; i++) {
-        const cookie = cookies[i].trim();
-        if (cookie.substring(0, name.length + 1) === (name + '=')) {
-          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-          break;
-        }
-      }
-    }
-    return cookieValue;
-  }
-  const csrftoken = getCookie('csrftoken');
+  /* CSRF */
+  function getCookie(name){let v=null;if(document.cookie&&document.cookie!==''){const a=document.cookie.split(';');for(let i=0;i<a.length;i++){const c=a[i].trim();if(c.substring(0,name.length+1)===(name+'=')){v=decodeURIComponent(c.substring(name.length+1));break;}}}return v;}
+  const csrftoken=getCookie('csrftoken');
 
-  /* Link kopyalama */
+  /* Link kopyala */
   function copyLink(url){
-    if (navigator.clipboard && navigator.clipboard.writeText){
-      navigator.clipboard.writeText(url).then(()=> alert("Bağlantı kopyalandı!"));
-    } else {
-      const t = document.createElement('textarea');
-      t.value = url; document.body.appendChild(t); t.select();
-      try { document.execCommand('copy'); alert("Bağlantı kopyalandı!"); } catch(e){}
-      document.body.removeChild(t);
-    }
+    if(navigator.clipboard?.writeText){navigator.clipboard.writeText(url).then(()=>alert("Bağlantı kopyalandı!"));return;}
+    const t=document.createElement('textarea');t.value=url;document.body.appendChild(t);t.select();
+    try{document.execCommand('copy');alert("Bağlantı kopyalandı!");}catch(e){}
+    document.body.removeChild(t);
   }
 
-  /* Post beğeni (AJAX POST) */
-  const postLikeBtn = document.getElementById('like-post-btn');
-  if (postLikeBtn){
-    postLikeBtn.addEventListener('click', async (e) => {
+  /* Beğeni */
+  const postLikeBtn=document.getElementById('like-post-btn');
+  if(postLikeBtn){
+    postLikeBtn.addEventListener('click',async e=>{
       e.preventDefault();
-      const url = postLikeBtn.getAttribute('href');
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: {'X-Requested-With':'XMLHttpRequest', 'X-CSRFToken': csrftoken},
-      });
-      if (res.ok){
-        const data = await res.json();
-        if (data.ok){
-          document.getElementById('post-like-count').textContent = data.likes;
-        }
-      } else if (res.status === 403){
-        window.location.href = "{% url 'login' %}";
-      }
+      const res=await fetch(postLikeBtn.href,{method:'POST',headers:{'X-Requested-With':'XMLHttpRequest','X-CSRFToken':csrftoken}});
+      if(res.ok){const data=await res.json();if(data.ok){document.getElementById('post-like-count').textContent=data.likes;}}
+      else if(res.status===403){window.location.href="{% url 'login' %}";}
     });
   }
 
-  /* Kaydet / Kaldır (AJAX POST) */
-  const saveBtn = document.getElementById('save-post-btn');
-  if (saveBtn){
-    saveBtn.addEventListener('click', async (e)=>{
+  /* Kaydet */
+  const saveBtn=document.getElementById('save-post-btn');
+  if(saveBtn){
+    saveBtn.addEventListener('click',async e=>{
       e.preventDefault();
-      const url = saveBtn.getAttribute('href');
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: {'X-Requested-With':'XMLHttpRequest', 'X-CSRFToken': csrftoken},
-      });
-      if (res.ok){
-        const data = await res.json();
-        if (data.ok){
-          saveBtn.textContent = data.saved ? '💾 Kaydı kaldır' : '💾 Kaydet';
-        }
-      } else if (res.status === 403){
-        window.location.href = "{% url 'login' %}";
-      }
+      const res=await fetch(saveBtn.href,{method:'POST',headers:{'X-Requested-With':'XMLHttpRequest','X-CSRFToken':csrftoken}});
+      if(res.ok){const data=await res.json();if(data.ok){saveBtn.textContent=data.saved?'💾 Kaydı kaldır':'💾 Kaydet';}}
+      else if(res.status===403){window.location.href="{% url 'login' %}";}
     });
   }
 
-  /* Görsel önizleme (kök yorum formu) */
+  /* Görsel önizleme (kök form) */
   (function(){
-    const fileInput = document.getElementById('id_image');
-    const preview   = document.getElementById('preview-img');
-    if (!fileInput || !preview) return;
-    fileInput.addEventListener('change', e => {
-      const f = e.target.files && e.target.files[0];
-      if (!f || !/^image\//.test(f.type)) { preview.style.display='none'; preview.src=''; return; }
-      preview.src = URL.createObjectURL(f);
-      preview.style.display = 'block';
+    const input=document.getElementById('id_image');
+    const prev=document.getElementById('preview-img');
+    if(!input||!prev) return;
+    input.addEventListener('change', e=>{
+      const f=e.target.files&&e.target.files[0];
+      if(!f||!/^image\//.test(f.type)){prev.style.display='none';prev.src='';return;}
+      prev.src=URL.createObjectURL(f); prev.style.display='block';
     });
   })();
 </script>

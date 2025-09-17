@@ -1,226 +1,58 @@
+{# comments/comments_thread.html #}
 {% load static %}
 
-<style>
-  .c-wrap{max-width:820px}
-  .c-card{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.03);border-radius:12px;padding:12px}
-  .c-meta{color:#9aa0a6;font-size:.9rem}
-  .c-actions{display:flex;gap:.6rem;align-items:center}
-  .c-reply{border:1px dashed rgba(255,255,255,.18);border-radius:10px;padding:10px;background:rgba(255,255,255,.02)}
-  .c-indent{margin-left:1rem}
-  .ai-badge{display:inline-flex;gap:.5rem;align-items:center;font-size:.86rem;color:#aeb3ff;background:rgba(108,99,255,.12);border:1px solid rgba(108,99,255,.25);padding:6px 10px;border-radius:10px}
-</style>
-
-<div class="c-wrap" id="comments-container">
-  {% for c in comments %}
-    {% if c.is_visible|default:True %}
-      {% include "comments/_comment_node.html" with node=c %}
-    {% endif %}
-  {% empty %}
-    <p class="c-meta">Henüz yorum yok.</p>
-  {% endfor %}
-</div>
-
-{% if request.user.is_authenticated %}
-  <form id="new-comment-form" class="c-card mt-3" method="post" action="">
-    {% csrf_token %}
-    <textarea name="comment" rows="3" class="form-control mb-2" placeholder="Yorumunuz..." required></textarea>
-    <div class="d-flex justify-content-between align-items-center">
-      <span class="ai-badge">🤖 Yapay zeka tarafından iyileştirilir</span>
-      <button type="submit" class="btn btn-primary">💬 Yorum Yap</button>
+{% for c in comments %}
+  <div class="comment-card mb-3" id="comment_{{ c.id }}">
+    <div class="d-flex justify-content-between">
+      <div><strong>{{ c.user.username }}</strong></div>
+      <small class="text-muted">{{ c.created_at|timesince }} ago</small>
     </div>
-  </form>
-{% else %}
-  <p class="c-meta">Yorum yazmak için <a href="{% url 'login' %}">giriş yap</a>.</p>
-{% endif %}
 
-<script>
-  // ---------- CSRF ----------
-  function getCookie(name){
-    let v=null;
-    if(document.cookie!==''){
-      const cs=document.cookie.split(';');
-      for(let c of cs){c=c.trim();if(c.substring(0,name.length+1)===name+'='){v=decodeURIComponent(c.substring(name.length+1));break}}
-    }
-    return v;
-  }
-  const csrftoken=getCookie('csrftoken');
-
-  function escapeHtml(s){
-    return String(s)
-      .replaceAll('&','&amp;')
-      .replaceAll('<','&lt;')
-      .replaceAll('>','&gt;')
-      .replaceAll('"','&quot;')
-      .replaceAll("'","&#039;");
-  }
-
-  // ---------- Like (yorum) ----------
-  function wireLikeHandlers(scope){
-    scope.querySelectorAll('.js-like-comment').forEach(a=>{
-      a.addEventListener('click', async (e)=>{
-        e.preventDefault();
-        const res=await fetch(a.href,{
-          method:'POST',
-          headers:{'X-Requested-With':'XMLHttpRequest','X-CSRFToken':csrftoken}
-        });
-        if(res.ok){
-          const d=await res.json();
-          if(d.ok){
-            const span=document.getElementById(`like-count-${d.comment_id}`);
-            if(span) span.textContent=d.like_count;
-          }
-        }else if(res.status===403){
-          location.href="{% url 'login' %}";
-        }
-      });
-    });
-  }
-
-  // ---------- Yanıt toggle ----------
-  function wireReplyToggles(scope){
-    scope.querySelectorAll('.toggle-reply').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        const el=document.getElementById(btn.dataset.target);
-        if(!el) return;
-        el.classList.toggle('d-none');
-        const i=el.querySelector('input[name="comment"]');
-        if(!el.classList.contains('d-none') && i) i.focus();
-      });
-    });
-  }
-
-  // ---------- Yanıt gönder (AJAX) ----------
-  function wireReplyForm(form){
-    form.addEventListener('submit', async (e)=>{
-      e.preventDefault();
-      const parentId=form.dataset.parent;
-      const fd=new FormData(form);
-      const res=await fetch(window.location.href,{
-        method:'POST',
-        headers:{'X-Requested-With':'XMLHttpRequest','X-CSRFToken':csrftoken},
-        body:fd
-      });
-      if(!res.ok){
-        if(res.status===403) location.href="{% url 'login' %}";
-        return;
-      }
-      const d=await res.json();
-      if(!d.ok) return;
-
-      // HTML: yeni reply bloğunu oluştur (recursive yapı için kendi alt alanını da hazırla)
-      const cont=document.querySelector(`[data-children="${parentId}"]`);
-      if(cont){
-        const node=document.createElement('div');
-        node.className='c-reply mb-2';
-        node.id=`reply_${d.id}`;
-        node.innerHTML=`
-          <div class="d-flex justify-content-between">
-            <div><strong>${d.user}</strong> <span class="c-meta">• ${d.created}</span></div>
-          </div>
-          <div class="mt-1">${escapeHtml(d.comment)}</div>
-
-          <div class="c-actions mt-2">
-            <a class="link-plain btn btn-sm btn-outline-secondary js-like-comment" href="/comment/${d.id}/like/" data-id="${d.id}">
-              👍 Beğen (<span id="like-count-${d.id}">${d.like_count}</span>)
-            </a>
-            <span class="btn btn-sm btn-outline-secondary toggle-reply" data-target="reply-form-${d.id}">↩️ Yanıtla</span>
-          </div>
-
-          <form id="reply-form-${d.id}" class="mt-2 d-none js-reply-form c-reply" data-parent="${d.id}" method="post" action="">
-            <input type="hidden" name="parent_id" value="${d.id}">
-            <div class="input-group">
-              <input type="text" name="comment" class="form-control" placeholder="Yanıt yaz..." required>
-              <button type="submit" class="btn btn-outline-primary">Gönder</button>
-            </div>
-          </form>
-
-          <div class="c-indent mt-2" data-children="${d.id}"></div>
-        `;
-        cont.appendChild(node);
-
-        // yeni gelen düğümleri kablolayalım
-        wireLikeHandlers(node);
-        wireReplyToggles(node);
-        node.querySelectorAll('.js-reply-form').forEach(f=>wireReplyForm(f));
-      }
-
-      form.reset();
-      form.classList.add('d-none');
-    });
-  }
-
-  function wireReplyForms(scope){
-    scope.querySelectorAll('.js-reply-form').forEach(f=>wireReplyForm(f));
-  }
-
-  // ---------- Yeni kök yorum ----------
-  const newForm=document.getElementById('new-comment-form');
-  if(newForm){
-    newForm.addEventListener('submit', async (e)=>{
-      e.preventDefault();
-      const fd=new FormData(newForm);
-      const res=await fetch(window.location.href,{
-        method:'POST',
-        headers:{'X-Requested-With':'XMLHttpRequest','X-CSRFToken':csrftoken},
-        body:fd
-      });
-      if(!res.ok){
-        if(res.status===403) location.href="{% url 'login' %}";
-        return;
-      }
-      const d=await res.json();
-      if(!d.ok) return;
-
-      const container=document.getElementById('comments-container');
-      const wrap=document.createElement('div');
-      wrap.className='c-card mb-3';
-      wrap.id=`comment_${d.id}`;
-      wrap.innerHTML=`
-        <div class="d-flex justify-content-between">
-          <div><strong>${d.user}</strong> <span class="c-meta">• ${d.created}</span></div>
+    <div class="mt-2">
+      {{ c.comment|linebreaksbr }}
+      {% if c.image %}
+        <div class="mt-2">
+          <img src="{{ c.image.url }}" alt="comment image" style="max-width:220px;border-radius:8px;">
         </div>
-        <div class="mt-2">${escapeHtml(d.comment)}</div>
+      {% endif %}
+    </div>
 
-        <div class="c-actions mt-2">
-          <a class="link-plain btn btn-sm btn-outline-secondary js-like-comment" href="/comment/${d.id}/like/" data-id="${d.id}">
-            👍 Beğen (<span id="like-count-${d.id}">${d.like_count}</span>)
-          </a>
-          <span class="btn btn-sm btn-outline-secondary toggle-reply" data-target="reply-form-${d.id}">↩️ Yanıtla</span>
-        </div>
-
-        <form id="reply-form-${d.id}" class="mt-2 d-none js-reply-form c-reply" data-parent="${d.id}" method="post" action="">
-          <input type="hidden" name="parent_id" value="${d.id}">
-          <div class="input-group">
-            <input type="text" name="comment" class="form-control" placeholder="Yanıt yaz..." required>
-            <button type="submit" class="btn btn-outline-primary">Gönder</button>
-          </div>
+    {% if request.user.is_authenticated %}
+      <details class="mt-2">
+        <summary class="link-plain" style="cursor:pointer;">↩️ Yanıtla</summary>
+        <form class="mt-2" method="post"
+              action="{% url 'blogs:blogs' post.slug %}#comment_{{ c.id }}"
+              enctype="multipart/form-data">
+          {% csrf_token %}
+          <input type="hidden" name="parent_id" value="{{ c.id }}">
+          <textarea class="form-control mb-2" name="comment" rows="3" placeholder="Yanıt yaz..."></textarea>
+          <input type="file" class="form-control mb-2" name="image" accept="image/png,image/jpeg,image/webp,image/gif">
+          <button type="submit" class="btn btn-sm btn-outline-warning">Yanıt Gönder</button>
         </form>
+      </details>
+    {% endif %}
 
-        <div class="c-indent mt-2" data-children="${d.id}"></div>
-      `;
-      container.prepend(wrap);
-
-      // yeni elemanları bağla
-      wireLikeHandlers(wrap);
-      wireReplyToggles(wrap);
-      wireReplyForms(wrap);
-
-      // üstteki sayaç varsa +1
-      const badge=document.getElementById('comment-count');
-      if(badge){
-        const n=parseInt(badge.textContent||'0',10);
-        badge.textContent=(n+1).toString();
-      }
-
-      newForm.reset();
-    });
-  }
-
-  // ---------- İlk yüklemede mevcut DOM'u bağla ----------
-  (function init(){
-    const root=document;
-    wireLikeHandlers(root);
-    wireReplyToggles(root);
-    wireReplyForms(root);
-  })();
-</script>
+    {% if c.replies.all %}
+      <div class="reply-indent mt-3">
+        {% for r in c.replies.all %}
+          <div class="reply-card mb-2" id="comment_{{ r.id }}">
+            <div class="d-flex justify-content-between">
+              <div><strong>{{ r.user.username }}</strong></div>
+              <small class="text-muted">{{ r.created_at|timesince }} ago</small>
+            </div>
+            <div class="mt-2">
+              {{ r.comment|linebreaksbr }}
+              {% if r.image %}
+                <div class="mt-2">
+                  <img src="{{ r.image.url }}" alt="reply image" style="max-width:180px;border-radius:8px;">
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+{% empty %}
+  <div class="text-muted">Henüz yorum yok. İlk yorumu sen yaz 🎉</div>
+{% endfor %}
