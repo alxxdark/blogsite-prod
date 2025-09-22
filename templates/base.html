@@ -16,7 +16,7 @@
   <link href="https://fonts.googleapis.com/css?family=Playfair+Display:700,900" rel="stylesheet">
 
   <!-- Custom CSS (cache-busting) -->
-  <link href="{% static 'css/blog.css' %}?v=2" rel="stylesheet">
+  <link href="{% static 'css/blog.css' %}?v=3" rel="stylesheet">
 
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -25,18 +25,13 @@
   <meta name="theme-color" content="#00bcd4">
 
   <style>
-    /* Logo animasyonu (küçük dokunuş) */
+    /* Logo animasyonu */
     @keyframes blogend-pulse {
       0%   { color: #00bcd4; text-shadow: 0 0 0px #00bcd4; }
       50%  { color: #00e5ff; text-shadow: 0 0 12px #00e5ff; }
       100% { color: #00bcd4; text-shadow: 0 0 0px #00bcd4; }
     }
-    .blogend-pulse {
-      font-family: 'Segoe UI', sans-serif;
-      font-size: 2rem;
-      text-align: center;
-      animation: blogend-pulse 2s infinite;
-    }
+    .blogend-pulse { font-family: 'Segoe UI', sans-serif; font-size: 2rem; text-align: center; animation: blogend-pulse 2s infinite; }
 
     /* Hamburger menü (X animasyonu) */
     .navbar-toggler{
@@ -64,6 +59,10 @@
       padding: 20px; border: 1px solid #00bcd4; border-radius: 10px;
       z-index: 9999; max-width: 350px;
     }
+
+    /* Geri butonu tıklanabilirlik */
+    #appBackBtn { border-radius: 999px; touch-action: manipulation; -webkit-tap-highlight-color: transparent; z-index: 1001; }
+    .navbar { position: relative; z-index: 1000; }
   </style>
 </head>
 <body>
@@ -118,7 +117,7 @@
     <div class="container-fluid">
 
       <!-- GERİ BUTONU (mobil/PWA) -->
-      <button id="appBackBtn" class="btn btn-outline-light btn-sm d-none" type="button" style="border-radius:999px; margin-right:8px;">
+      <button id="appBackBtn" class="btn btn-outline-light btn-sm d-none" type="button" style="margin-right:8px;">
         <i class="fa fa-chevron-left"></i> Geri
       </button>
 
@@ -214,29 +213,56 @@
 </script>
 {% endif %}
 
-<!-- Mobil/PWA geri butonu -->
+<!-- Mobil/PWA GERİ butonu — dayanıklı sürüm -->
 <script>
 (function () {
   const backBtn = document.getElementById('appBackBtn');
   if (!backBtn) return;
 
+  // Standalone (PWA) veya mobil tespiti
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches
                        || (window.navigator.standalone === true); // iOS
+  const isMobile = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
 
-  const shouldShow = isStandalone || window.innerWidth <= 768;
+  // Buton görünürlüğü
+  const shouldShow = isStandalone || isMobile || window.innerWidth <= 768;
   if (shouldShow) backBtn.classList.remove('d-none');
 
-  backBtn.addEventListener('click', function () {
-    if (history.length > 1) { history.back(); }
-    else { window.location.href = '/'; }
-  });
+  // İlk yüklemede bir state koy (bazı tarayıcılarda history 1 kalabiliyor)
+  try {
+    const st = history.state || {};
+    if (!st.__boot__) {
+      history.replaceState({ __boot__: true, ts: Date.now() }, '', location.href);
+    }
+  } catch (_) {}
 
-  // bazı cihazlarda history zayıf olabilir – link tıklamalarını kaydet
-  document.addEventListener('click', (e) => {
-    const a = e.target.closest('a[href]');
-    if (!a) return;
-    try { history.pushState({}, '', a.href); } catch(_) {}
-  });
+  function smartBack() {
+    try {
+      // Referrer aynı origin ise oraya dön
+      if (document.referrer) {
+        const r = new URL(document.referrer, location.href);
+        if (r.origin === location.origin) {
+          location.href = document.referrer;
+          return;
+        }
+      }
+
+      // History varsa geri
+      if (history.length > 1) {
+        history.back();
+        // Bazı iOS durumlarında no-op olabilir; 300ms sonra fallback
+        setTimeout(() => { location.href = '/'; }, 300);
+        return;
+      }
+
+      // Son çare: ana sayfa
+      location.href = '/';
+    } catch (e) {
+      location.href = '/';
+    }
+  }
+
+  backBtn.addEventListener('click', smartBack, { passive: true });
 })();
 </script>
 </body>
