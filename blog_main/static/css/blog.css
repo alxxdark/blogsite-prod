@@ -371,3 +371,44 @@ a:visited { color: #27d3ff; }
   border-radius: 12px;
 }
 
+/* ==== Erişilebilirlik / Kontrast Fixleri (en sonda kalsın) ==== */
+
+/* Koyu temada "text-dark" ve "text-muted" Bootstrap sınıfları görünmüyordu */
+.text-dark { color: #e8eef7 !important; }   /* başlık/linkler */
+.text-muted, .muted, small { color: #9fb3c8 !important; }  /* meta yazılar */
+
+/* Liste/kart başlık linkleri */
+.card .card-body h3 a,
+.post-title a,
+.post-list a {
+  color: #e8eef7 !important;
+  text-decoration: none;
+}
+.card .card-body h3 a:hover,
+.post-title a:hover,
+.post-list a:hover { color: #8fe8ff !important; }
+
+/* Gövde metin */
+.card-text, .post-content, p, li { color: #d7e1ef !important; line-height: 1.7; }
+
+/* Kart arka planını biraz yumuşat, parlamayı kısmak istersen: */
+.card, .post-card {
+  background: #1b2026 !important;
+  border: 1px solid rgba(255,255,255,.08) !important;
+  box-shadow: 0 6px 24px rgba(0,0,0,.45), 0 0 0 1px rgba(61,219,240,.06) !important;
+}
+
+/* Jumbotron üstündeki metinler beyaz kalsın */
+.jumbotron.text-white h1, .jumbotron.text-white p, .jumbotron .lead a {
+  color: #ffffff !important;
+}
+
+/* Linkler genel tema */
+a { color: #27d3ff !important; }
+a:hover { color: #8fe8ff !important; }
+
+/* Mobilde fontları çok küçültmeyelim (okunabilirlik) */
+@media (max-width: 480px){
+  h1,h2,h3{ font-size: clamp(18px, 5vw, 22px) !important; }
+  p, li   { font-size: clamp(13px, 3.8vw, 15px) !important; }
+}

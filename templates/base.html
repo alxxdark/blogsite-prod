@@ -12,19 +12,20 @@
   <!-- Bootstrap 5.3.2 -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
-  <!-- Fonts -->
+  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css?family=Playfair+Display:700,900" rel="stylesheet">
 
-  <!-- Custom CSS -->
-  <link href="{% static 'css/blog.css' %}" rel="stylesheet">
+  <!-- Custom CSS (cache-busting) -->
+  <link href="{% static 'css/blog.css' %}?v=2" rel="stylesheet">
 
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
+  <!-- PWA renk -->
   <meta name="theme-color" content="#00bcd4">
 
   <style>
-    /* Logo animasyonu */
+    /* Logo animasyonu (küçük dokunuş) */
     @keyframes blogend-pulse {
       0%   { color: #00bcd4; text-shadow: 0 0 0px #00bcd4; }
       50%  { color: #00e5ff; text-shadow: 0 0 12px #00e5ff; }
@@ -37,33 +38,20 @@
       animation: blogend-pulse 2s infinite;
     }
 
-    /* Hamburger menü (solda, 3 çizgi, açılınca X) */
+    /* Hamburger menü (X animasyonu) */
     .navbar-toggler{
-      display:flex;
-      flex-direction:column;
-      justify-content:center;
-      align-items:center;
-      width:44px;
-      height:36px;
+      display:flex; flex-direction:column; justify-content:center; align-items:center;
+      width:44px; height:36px;
       border:1px solid rgba(0,212,230,.6);
       background:rgba(0,212,230,.08);
-      border-radius:10px;
-      padding:0;
-      outline:none !important;
+      border-radius:10px; padding:0; outline:none !important;
     }
-    .navbar-toggler:focus{
-      box-shadow:0 0 0 .25rem rgba(0,188,212,.35);
-    }
+    .navbar-toggler:focus{ box-shadow:0 0 0 .25rem rgba(0,188,212,.35); }
     .toggler-line{
-      display:block;
-      width:28px;
-      height:3px;
-      background:#00d4e6;
-      margin:4px 0;
-      border-radius:2px;
+      display:block; width:28px; height:3px; background:#00d4e6;
+      margin:4px 0; border-radius:2px;
       transition: transform .22s ease, opacity .22s ease, background-color .22s ease;
     }
-    .navbar-toggler.collapsed .toggler-line { background:#00d4e6; }
     .navbar-toggler:not(.collapsed) .toggler-line { background:#00bcd4; }
     .navbar-toggler:not(.collapsed) .toggler-line:nth-child(1){ transform: translateY(7px) rotate(45deg); }
     .navbar-toggler:not(.collapsed) .toggler-line:nth-child(2){ opacity:0; }
@@ -71,8 +59,10 @@
 
     /* Cookie modal */
     .cookie-modal {
-      position: fixed; bottom: 20px; right: 20px; background-color: #1e1e1e; color: #e0e0e0;
-      padding: 20px; border: 1px solid #00bcd4; border-radius: 10px; z-index: 9999; max-width: 350px;
+      position: fixed; bottom: 20px; right: 20px;
+      background-color: #1e1e1e; color: #e0e0e0;
+      padding: 20px; border: 1px solid #00bcd4; border-radius: 10px;
+      z-index: 9999; max-width: 350px;
     }
   </style>
 </head>
@@ -95,6 +85,7 @@
             <img src="{% static 'images/ejderha_logo.png' %}" alt="Blogend" style="height: 200px;">
           </a>
         </div>
+
         <div class="col-4">
           <form action="{% url 'blogs:search' %}" method="GET">
             <div class="input-group">
@@ -108,6 +99,7 @@
             </a>
           </div>
         </div>
+
         <div class="col-4 d-flex justify-content-end align-items-center" style="margin-right:20px;">
           {% if not user.is_authenticated %}
             <a class="btn btn-sm btn-warning" href="{% url 'login' %}">Login</a>&nbsp;
@@ -122,9 +114,15 @@
   </div>
 
   <!-- Navbar -->
-  <nav class="navbar navbar-light bg-light">
+  <nav class="navbar navbar-dark bg-dark">
     <div class="container-fluid">
-      <!-- HAMBURGER (solda) -->
+
+      <!-- GERİ BUTONU (mobil/PWA) -->
+      <button id="appBackBtn" class="btn btn-outline-light btn-sm d-none" type="button" style="border-radius:999px; margin-right:8px;">
+        <i class="fa fa-chevron-left"></i> Geri
+      </button>
+
+      <!-- HAMBURGER -->
       <button class="navbar-toggler collapsed" type="button"
               data-bs-toggle="collapse" data-bs-target="#navbarMenu"
               aria-controls="navbarMenu" aria-expanded="false" aria-label="Toggle navigation">
@@ -156,6 +154,7 @@
     </div>
   </nav>
 
+  <!-- Sayfa içeriği -->
   <div class="container">
     {% block content %}{% endblock %}
   </div>
@@ -175,10 +174,8 @@
   <button class="btn btn-secondary btn-sm" onclick="declineCookies()">Reject All</button>
 </div>
 
-<!-- Bootstrap Bundle -->
+<!-- JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-<!-- SweetAlert2 + Confetti -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 
@@ -195,14 +192,13 @@
   function declineCookies(){ localStorage.setItem("cookieDeclined",true); document.getElementById("cookieModal").style.display="none"; }
 </script>
 
-<!-- Django messages -> SweetAlert (genel) -->
+<!-- Django messages -> SweetAlert -->
 {% if messages %}
 <script>
   (function(){
     const queue = [];
     {% for message in messages %}
-      queue.push({icon:"{{ message.tags|default:'info' }}", title:"{{ message|escapejs }}"});
-    {% endfor %}
+      queue.push({icon:"{{ message.tags|default:'info' }}", title:"{{ message|escapejs }}"});{% endfor %}
     (async()=>{for(const m of queue){await Swal.fire({icon:m.icon,title:m.title,timer:2200,showConfirmButton:false});}})();
   })();
 </script>
@@ -217,5 +213,31 @@
   })();
 </script>
 {% endif %}
+
+<!-- Mobil/PWA geri butonu -->
+<script>
+(function () {
+  const backBtn = document.getElementById('appBackBtn');
+  if (!backBtn) return;
+
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+                       || (window.navigator.standalone === true); // iOS
+
+  const shouldShow = isStandalone || window.innerWidth <= 768;
+  if (shouldShow) backBtn.classList.remove('d-none');
+
+  backBtn.addEventListener('click', function () {
+    if (history.length > 1) { history.back(); }
+    else { window.location.href = '/'; }
+  });
+
+  // bazı cihazlarda history zayıf olabilir – link tıklamalarını kaydet
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('a[href]');
+    if (!a) return;
+    try { history.pushState({}, '', a.href); } catch(_) {}
+  });
+})();
+</script>
 </body>
 </html>
