@@ -15,8 +15,8 @@
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css?family=Playfair+Display:700,900" rel="stylesheet">
 
-  <!-- Custom CSS (cache-busting) -->
-  <link href="{% static 'css/blog.css' %}?v=3" rel="stylesheet">
+  <!-- Custom CSS -->
+  <link href="{% static 'css/blog.css' %}?v=4" rel="stylesheet">
 
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -31,7 +31,12 @@
       50%  { color: #00e5ff; text-shadow: 0 0 12px #00e5ff; }
       100% { color: #00bcd4; text-shadow: 0 0 0px #00bcd4; }
     }
-    .blogend-pulse { font-family: 'Segoe UI', sans-serif; font-size: 2rem; text-align: center; animation: blogend-pulse 2s infinite; }
+    .blogend-pulse {
+      font-family: 'Segoe UI', sans-serif;
+      font-size: 2rem;
+      text-align: center;
+      animation: blogend-pulse 2s infinite;
+    }
 
     /* Hamburger menü (X animasyonu) */
     .navbar-toggler{
@@ -60,8 +65,25 @@
       z-index: 9999; max-width: 350px;
     }
 
-    /* Geri butonu tıklanabilirlik */
-    #appBackBtn { border-radius: 999px; touch-action: manipulation; -webkit-tap-highlight-color: transparent; z-index: 1001; }
+    /* Geri butonu (sade ikon) */
+    #appBackBtn {
+      background: transparent !important;
+      border: none !important;
+      padding: 6px 10px;
+      font-size: 1.4rem;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      z-index: 1001;
+    }
+    #appBackBtn i {
+      font-size: 1.6rem;
+      color: #fff;
+    }
+    #appBackBtn:focus { outline: none; box-shadow: none !important; }
     .navbar { position: relative; z-index: 1000; }
   </style>
 </head>
@@ -116,9 +138,9 @@
   <nav class="navbar navbar-dark bg-dark">
     <div class="container-fluid">
 
-      <!-- GERİ BUTONU (mobil/PWA) -->
-      <button id="appBackBtn" class="btn btn-outline-light btn-sm d-none" type="button" style="margin-right:8px;">
-        <i class="fa fa-chevron-left"></i> Geri
+      <!-- GERİ BUTONU (ikon) -->
+      <button id="appBackBtn" class="d-none" type="button" aria-label="Geri">
+        <i class="fa fa-chevron-left"></i>
       </button>
 
       <!-- HAMBURGER -->
@@ -213,22 +235,19 @@
 </script>
 {% endif %}
 
-<!-- Mobil/PWA GERİ butonu — dayanıklı sürüm -->
+<!-- Mobil/PWA GERİ butonu -->
 <script>
 (function () {
   const backBtn = document.getElementById('appBackBtn');
   if (!backBtn) return;
 
-  // Standalone (PWA) veya mobil tespiti
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches
                        || (window.navigator.standalone === true); // iOS
   const isMobile = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
 
-  // Buton görünürlüğü
   const shouldShow = isStandalone || isMobile || window.innerWidth <= 768;
   if (shouldShow) backBtn.classList.remove('d-none');
 
-  // İlk yüklemede bir state koy (bazı tarayıcılarda history 1 kalabiliyor)
   try {
     const st = history.state || {};
     if (!st.__boot__) {
@@ -238,7 +257,6 @@
 
   function smartBack() {
     try {
-      // Referrer aynı origin ise oraya dön
       if (document.referrer) {
         const r = new URL(document.referrer, location.href);
         if (r.origin === location.origin) {
@@ -246,20 +264,13 @@
           return;
         }
       }
-
-      // History varsa geri
       if (history.length > 1) {
         history.back();
-        // Bazı iOS durumlarında no-op olabilir; 300ms sonra fallback
         setTimeout(() => { location.href = '/'; }, 300);
         return;
       }
-
-      // Son çare: ana sayfa
       location.href = '/';
-    } catch (e) {
-      location.href = '/';
-    }
+    } catch (e) { location.href = '/'; }
   }
 
   backBtn.addEventListener('click', smartBack, { passive: true });
