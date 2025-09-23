@@ -5,6 +5,7 @@ from django.conf.urls.static import static
 from django.views.generic import TemplateView
 from django.contrib.auth import views as auth_views
 from django.views.generic import RedirectView
+from django.shortcuts import render
 
 from . import views
 from django.contrib.sitemaps.views import sitemap
@@ -32,6 +33,7 @@ urlpatterns = [
 
     # Dashboard
     path("dashboard/", include("dashboards.urls")),
+    path("pwa/", lambda request: render(request, "pwa.html"), name="pwa_help"),
 
     # Password reset flow
     path("password_reset/", auth_views.PasswordResetView.as_view(), name="password_reset"),
