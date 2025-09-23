@@ -9,82 +9,71 @@
   <title>Blogend</title>
   <link rel="icon" type="image/png" href="{% static 'images/ejderha_logo.png' %}">
 
-  <!-- Bootstrap 5.3.2 -->
+  <!-- Bootstrap -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
-  <!-- Google Fonts -->
+  <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css?family=Playfair+Display:700,900" rel="stylesheet">
 
   <!-- Custom CSS -->
-  <link href="{% static 'css/blog.css' %}?v=4" rel="stylesheet">
+  <link href="{% static 'css/blog.css' %}?v=5" rel="stylesheet">
 
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
-  <!-- PWA renk -->
+  <!-- PWA / Manifest -->
+  <link rel="manifest" href="{% static 'manifest.json' %}">
   <meta name="theme-color" content="#00bcd4">
 
+  <!-- iOS PWA -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="{% static 'icons/192.png' %}">
+
   <style>
-    /* Logo animasyonu */
-    @keyframes blogend-pulse {
-      0%   { color: #00bcd4; text-shadow: 0 0 0px #00bcd4; }
-      50%  { color: #00e5ff; text-shadow: 0 0 12px #00e5ff; }
-      100% { color: #00bcd4; text-shadow: 0 0 0px #00bcd4; }
-    }
-    .blogend-pulse {
-      font-family: 'Segoe UI', sans-serif;
-      font-size: 2rem;
-      text-align: center;
-      animation: blogend-pulse 2s infinite;
-    }
+    /* küçük animasyon */
+    @keyframes blogend-pulse { 0%{color:#00bcd4} 50%{color:#00e5ff} 100%{color:#00bcd4} }
+    .blogend-pulse { font-family:'Segoe UI',sans-serif; font-size:2rem; text-align:center; animation:blogend-pulse 2s infinite; }
 
-    /* Hamburger menü (X animasyonu) */
-    .navbar-toggler{
-      display:flex; flex-direction:column; justify-content:center; align-items:center;
-      width:44px; height:36px;
-      border:1px solid rgba(0,212,230,.6);
-      background:rgba(0,212,230,.08);
-      border-radius:10px; padding:0; outline:none !important;
-    }
-    .navbar-toggler:focus{ box-shadow:0 0 0 .25rem rgba(0,188,212,.35); }
-    .toggler-line{
-      display:block; width:28px; height:3px; background:#00d4e6;
-      margin:4px 0; border-radius:2px;
-      transition: transform .22s ease, opacity .22s ease, background-color .22s ease;
-    }
-    .navbar-toggler:not(.collapsed) .toggler-line { background:#00bcd4; }
-    .navbar-toggler:not(.collapsed) .toggler-line:nth-child(1){ transform: translateY(7px) rotate(45deg); }
-    .navbar-toggler:not(.collapsed) .toggler-line:nth-child(2){ opacity:0; }
-    .navbar-toggler:not(.collapsed) .toggler-line:nth-child(3){ transform: translateY(-7px) rotate(-45deg); }
+    /* hamburger (X animasyonu) */
+    .navbar-toggler{display:flex;flex-direction:column;justify-content:center;align-items:center;width:44px;height:36px;border:1px solid rgba(0,212,230,.6);background:rgba(0,212,230,.08);border-radius:10px;padding:0;}
+    .navbar-toggler:focus{box-shadow:0 0 0 .25rem rgba(0,188,212,.35);}
+    .toggler-line{display:block;width:28px;height:3px;background:#00d4e6;margin:4px 0;border-radius:2px;transition:transform .22s,opacity .22s,background-color .22s;}
+    .navbar-toggler:not(.collapsed) .toggler-line{background:#00bcd4;}
+    .navbar-toggler:not(.collapsed) .toggler-line:nth-child(1){transform:translateY(7px) rotate(45deg);}
+    .navbar-toggler:not(.collapsed) .toggler-line:nth-child(2){opacity:0;}
+    .navbar-toggler:not(.collapsed) .toggler-line:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
 
-    /* Cookie modal */
-    .cookie-modal {
-      position: fixed; bottom: 20px; right: 20px;
-      background-color: #1e1e1e; color: #e0e0e0;
-      padding: 20px; border: 1px solid #00bcd4; border-radius: 10px;
-      z-index: 9999; max-width: 350px;
-    }
+    /* üst geri ikonu – sade */
+    #appBackBtn{background:transparent;border:none;padding:6px 10px;font-size:1.6rem;color:#fff;display:flex;align-items:center;justify-content:center;touch-action:manipulation;-webkit-tap-highlight-color:transparent;z-index:1001}
+    #appBackBtn:focus{outline:none;box-shadow:none!important}
+    .navbar{position:relative;z-index:1000}
 
-    /* Geri butonu (sade ikon) */
-    #appBackBtn {
-      background: transparent !important;
-      border: none !important;
-      padding: 6px 10px;
-      font-size: 1.4rem;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      touch-action: manipulation;
-      -webkit-tap-highlight-color: transparent;
-      z-index: 1001;
+    /* ALT TARAYICI ÇUBUĞU (Holigan tarzı) */
+    .app-toolbar{
+      position:fixed; left:0; right:0;
+      bottom:calc(env(safe-area-inset-bottom,0) + 12px);
+      margin:0 auto; width:min(520px, 92vw);
+      background:rgba(20,22,26,.86);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:20px; padding:10px 14px;
+      display:flex; justify-content:space-around; align-items:center;
+      z-index:2000; backdrop-filter:blur(10px);
+      box-shadow:0 10px 30px rgba(0,0,0,.35);
     }
-    #appBackBtn i {
-      font-size: 1.6rem;
-      color: #fff;
+    .tb-btn{
+      appearance:none; background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.12); color:#e8eef7;
+      width:56px; height:56px; border-radius:16px;
+      display:grid; place-items:center; font-size:1.25rem;
+      transition:transform .12s, background-color .2s, border-color .2s;
     }
-    #appBackBtn:focus { outline: none; box-shadow: none !important; }
-    .navbar { position: relative; z-index: 1000; }
+    .tb-btn:active{ transform:translateY(1px) scale(.98) }
+    .tb-btn i{ font-size:1.25rem }
+    @media (max-width:420px){ .tb-btn{ width:52px; height:52px; border-radius:14px } }
+
+    /* içerik çubuk altında kalmasın */
+    body{ padding-bottom:calc(74px + env(safe-area-inset-bottom,0)) }
   </style>
 </head>
 <body>
@@ -138,12 +127,12 @@
   <nav class="navbar navbar-dark bg-dark">
     <div class="container-fluid">
 
-      <!-- GERİ BUTONU (ikon) -->
+      <!-- ÜST GERİ OKU (ikon) -->
       <button id="appBackBtn" class="d-none" type="button" aria-label="Geri">
         <i class="fa fa-chevron-left"></i>
       </button>
 
-      <!-- HAMBURGER -->
+      <!-- Hamburger -->
       <button class="navbar-toggler collapsed" type="button"
               data-bs-toggle="collapse" data-bs-target="#navbarMenu"
               aria-controls="navbarMenu" aria-expanded="false" aria-label="Toggle navigation">
@@ -155,15 +144,11 @@
       <div class="collapse navbar-collapse" id="navbarMenu">
         <ul class="navbar-nav">
           <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="collapse" href="#categorySubMenu" role="button">
-              Categories
-            </a>
+            <a class="nav-link" data-bs-toggle="collapse" href="#categorySubMenu" role="button">Categories</a>
             <div class="collapse" id="categorySubMenu">
               <ul class="navbar-nav ms-3">
                 {% for cat in categories %}
-                  <li class="nav-item">
-                    <a class="nav-link" href="{% url 'blogs:posts_by_category' cat.id %}">{{ cat.category_name }}</a>
-                  </li>
+                  <li class="nav-item"><a class="nav-link" href="{% url 'blogs:posts_by_category' cat.id %}">{{ cat.category_name }}</a></li>
                 {% endfor %}
               </ul>
             </div>
@@ -185,10 +170,15 @@
   </footer>
 </div>
 
-<div style="text-align:center; margin-bottom:30px;">
-  <a href="/privacy-policy/" style="color:#00bcd4; text-decoration:none;">Privacy Policy</a>
+<!-- ALT TARAYICI ÇUBUĞU -->
+<div id="appToolbar" class="app-toolbar d-none" role="toolbar" aria-label="Tarayıcı araç çubuğu">
+  <button class="tb-btn" data-action="back"   aria-label="Geri"><i class="fa fa-chevron-left"></i></button>
+  <button class="tb-btn" data-action="share"  aria-label="Paylaş"><i class="fa fa-share"></i></button>
+  <button class="tb-btn" data-action="reload" aria-label="Yenile"><i class="fa fa-refresh"></i></button>
+  <button class="tb-btn" data-action="home"   aria-label="Ana sayfa"><i class="fa fa-home"></i></button>
 </div>
 
+<!-- Cookie Modal (varsayılanın aynı) -->
 <div id="cookieModal" class="cookie-modal" style="display:none;">
   <p>We use cookies to personalize content and analyze our traffic.</p>
   <button class="btn btn-primary btn-sm" onclick="acceptCookies()">Accept All</button>
@@ -201,7 +191,12 @@
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 
 <script>
-  // Loading & Cookie
+  // SW kaydı (PWA)
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('{% static "sw.js" %}');
+  }
+
+  // Loading & Cookies
   window.addEventListener('load', function() {
     document.getElementById('loading-screen').style.display = 'none';
     document.getElementById('main-content').style.display = 'block';
@@ -213,7 +208,7 @@
   function declineCookies(){ localStorage.setItem("cookieDeclined",true); document.getElementById("cookieModal").style.display="none"; }
 </script>
 
-<!-- Django messages -> SweetAlert -->
+<!-- Django messages -->
 {% if messages %}
 <script>
   (function(){
@@ -225,7 +220,78 @@
 </script>
 {% endif %}
 
-<!-- Kayıt sonrası tek-seferlik popup + konfeti -->
+<!-- Yeni: üst geri + alt toolbar davranışı -->
+<script>
+(function () {
+  const backBtn = document.getElementById('appBackBtn');
+  const bar = document.getElementById('appToolbar');
+
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+                    || (window.navigator.standalone === true);
+  const isMobile = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+
+  const shouldShow = isStandalone || isMobile || window.innerWidth <= 768;
+  if (shouldShow) {
+    if (backBtn) backBtn.classList.remove('d-none');
+    if (bar) bar.classList.remove('d-none');
+  }
+
+  // İlk state – iOS history=1 durumları için
+  try {
+    const st = history.state || {};
+    if (!st.__boot__) history.replaceState({ __boot__: true, ts: Date.now() }, '', location.href);
+  } catch (_) {}
+
+  function smartBack(){
+    try{
+      if (document.referrer){
+        const r = new URL(document.referrer, location.href);
+        if (r.origin === location.origin) { location.href = document.referrer; return; }
+      }
+      if (history.length > 1) {
+        history.back();
+        setTimeout(()=>{ /* no-op fallback */ location.href = '/'; }, 300);
+        return;
+      }
+      location.href = '/';
+    }catch(e){ location.href = '/'; }
+  }
+
+  async function smartShare(){
+    const data = { title: document.title, text: 'Blogend', url: location.href };
+    if (navigator.share) { try { await navigator.share(data); } catch(_) {} }
+    else {
+      try { await navigator.clipboard.writeText(location.href); if (navigator.vibrate) navigator.vibrate(20); }
+      catch(_) {}
+      alert('Bağlantı panoya kopyalandı.');
+    }
+  }
+
+  if (backBtn) backBtn.addEventListener('click', smartBack, { passive:true });
+
+  if (bar) bar.addEventListener('click', (e)=>{
+    const btn = e.target.closest('.tb-btn'); if (!btn) return;
+    const act = btn.dataset.action;
+    if (act === 'back')   smartBack();
+    if (act === 'share')  smartShare();
+    if (act === 'reload') location.reload();
+    if (act === 'home')   location.href = '/';
+  }, { passive:true });
+
+  // Sol kenar "geri" swipe jesti
+  let x0=null, y0=null;
+  window.addEventListener('touchstart', (e)=>{ const t=e.touches[0]; x0=t.clientX; y0=t.clientY; }, {passive:true});
+  window.addEventListener('touchend', (e)=>{
+    if (x0===null) return;
+    const t=e.changedTouches[0];
+    const dx=t.clientX-x0, dy=Math.abs(t.clientY-y0);
+    if (x0 < window.innerWidth*0.10 && dx > 60 && dy < 80) smartBack();
+    x0=y0=null;
+  }, {passive:true});
+})();
+</script>
+
+<!-- Kayıt sonrası popup (aynı) -->
 {% if new_user %}
 <script>
   Swal.fire({title:"🎉 Hoş geldiniz!",text:"Aramıza katıldığınız için teşekkürler.",icon:"success",showConfirmButton:false,timer:2600});
@@ -234,47 +300,5 @@
   })();
 </script>
 {% endif %}
-
-<!-- Mobil/PWA GERİ butonu -->
-<script>
-(function () {
-  const backBtn = document.getElementById('appBackBtn');
-  if (!backBtn) return;
-
-  const isStandalone = window.matchMedia('(display-mode: standalone)').matches
-                       || (window.navigator.standalone === true); // iOS
-  const isMobile = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
-
-  const shouldShow = isStandalone || isMobile || window.innerWidth <= 768;
-  if (shouldShow) backBtn.classList.remove('d-none');
-
-  try {
-    const st = history.state || {};
-    if (!st.__boot__) {
-      history.replaceState({ __boot__: true, ts: Date.now() }, '', location.href);
-    }
-  } catch (_) {}
-
-  function smartBack() {
-    try {
-      if (document.referrer) {
-        const r = new URL(document.referrer, location.href);
-        if (r.origin === location.origin) {
-          location.href = document.referrer;
-          return;
-        }
-      }
-      if (history.length > 1) {
-        history.back();
-        setTimeout(() => { location.href = '/'; }, 300);
-        return;
-      }
-      location.href = '/';
-    } catch (e) { location.href = '/'; }
-  }
-
-  backBtn.addEventListener('click', smartBack, { passive: true });
-})();
-</script>
 </body>
 </html>
