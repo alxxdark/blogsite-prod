@@ -16,7 +16,7 @@
   <link href="https://fonts.googleapis.com/css?family=Playfair+Display:700,900" rel="stylesheet">
 
   <!-- Custom CSS -->
-  <link href="{% static 'css/blog.css' %}?v=6" rel="stylesheet">
+  <link href="{% static 'css/blog.css' %}?v=7" rel="stylesheet">
 
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -79,6 +79,12 @@
       .blog-header .btn{ font-size:0.85rem; padding:4px 8px; }
       .navbar-nav .nav-link{ font-size:0.95rem; }
     }
+
+    /* Collapsible search ince ayar */
+    #searchCollapse .container { max-width: 720px; }
+    @media (max-width: 576px){
+      #searchCollapse { border-top: 1px solid rgba(255,255,255,.08); }
+    }
   </style>
 </head>
 <body>
@@ -102,12 +108,16 @@
         </div>
 
         <div class="col-4">
-          <form action="{% url 'blogs:search' %}" method="GET">
-            <div class="input-group">
-              <input class="form-control" type="text" name="keyword" value="{{ keyword }}" placeholder="Enter search term...">
-              <button type="submit" class="btn btn-warning">Go!</button>
-            </div>
-          </form>
+          <!-- MASAÜSTÜ: Arama kutusu -->
+          <div class="d-none d-md-block">
+            <form action="{% url 'blogs:search' %}" method="GET">
+              <div class="input-group">
+                <input class="form-control" type="text" name="keyword" value="{{ keyword }}" placeholder="Enter search term...">
+                <button type="submit" class="btn btn-warning">Go!</button>
+              </div>
+            </form>
+          </div>
+
           <div style="text-align:center; margin-top:35px;">
             <a href="{% url 'home' %}" style="text-decoration:none;">
               <h2 class="blogend-pulse">Blogend</h2>
@@ -140,6 +150,13 @@
         <span class="toggler-line"></span>
       </button>
 
+      <!-- MOBİL: Arama toggle butonu -->
+      <button class="btn btn-outline-light ms-2 d-md-none" type="button"
+              data-bs-toggle="collapse" data-bs-target="#searchCollapse"
+              aria-controls="searchCollapse" aria-expanded="false" aria-label="Search">
+        <i class="fa fa-search"></i>
+      </button>
+
       <div class="collapse navbar-collapse" id="navbarMenu">
         <ul class="navbar-nav">
           <li class="nav-item">
@@ -159,6 +176,19 @@
       </div>
     </div>
   </nav>
+
+  <!-- MOBİL: Collapsible Search -->
+  <div class="collapse bg-dark" id="searchCollapse">
+    <div class="container py-2">
+      <form action="{% url 'blogs:search' %}" method="GET">
+        <div class="input-group">
+          <input id="mobileSearchInput" class="form-control" type="text"
+                 name="keyword" value="{{ keyword }}" placeholder="Search...">
+          <button type="submit" class="btn btn-warning">Go!</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <!-- Sayfa içeriği -->
   <div class="container">
@@ -220,7 +250,7 @@
 </script>
 {% endif %}
 
-<!-- Alt toolbar davranışı -->
+<!-- Davranışlar -->
 <script>
 (function () {
   const bar = document.getElementById('appToolbar');
@@ -234,7 +264,7 @@
     bar.classList.remove('d-none');
   }
 
-  // İlk state
+  // İlk state (iOS history=1 için)
   try {
     const st = history.state || {};
     if (!st.__boot__) history.replaceState({ __boot__: true, ts: Date.now() }, '', location.href);
@@ -274,6 +304,14 @@
     if (act === 'home')   location.href = '/';
   }, { passive:true });
 
+  // MOBİL arama açılınca input'a fokus
+  document.addEventListener('DOMContentLoaded', function () {
+    const sc = document.getElementById('searchCollapse');
+    if (!sc) return;
+    sc.addEventListener('shown.bs.collapse', function () {
+      document.getElementById('mobileSearchInput')?.focus();
+    });
+  });
 })();
 </script>
 
