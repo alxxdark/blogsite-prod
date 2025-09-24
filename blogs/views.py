@@ -1,5 +1,6 @@
 # blogs/views.py
 from django.contrib import messages
+import logging
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db.models import Q, F, Prefetch
@@ -13,7 +14,7 @@ from django.core.paginator import Paginator  # <-- EKLENDİ
 
 from django.conf import settings
 import os
-
+logger = logging.getLogger(__name__)
 # Modeller ve formlar
 from .models import (
     Profile, Blog, Category, Comment, ContactMessage, StaticPage, SavedPost, CommentStatus
@@ -278,17 +279,75 @@ def about(request):
     return render(request, "about.html")
 
 
+# blogs/views.py
+import logging
+from django.conf import settings
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.core.mail import EmailMessage
+from django.utils import timezone
+
+from .forms import ContactForm
+from .models import ContactMessage
+
+logger = logging.getLogger(__name__)
+
 def contact_view(request):
-    from .forms import ContactForm
     form = ContactForm(request.POST or None)
+
     if request.method == "POST" and form.is_valid():
-        ContactMessage.objects.create(
-            name=form.cleaned_data["name"],
-            email=form.cleaned_data["email"],
-            message=form.cleaned_data["message"],
+        name = form.cleaned_data["name"]
+        email = form.cleaned_data["email"]
+        message = form.cleaned_data["message"]
+
+        # 1) Admin’e kayıt
+        cm = ContactMessage.objects.create(
+            name=name,
+            email=email,
+            message=message,
         )
-        return render(request, "contact_success.html")
-    return render(request, "contact.html", {"form": form})
+
+        # 2) Admin/notify listesine mail gönder
+        try:
+            subject = f"{getattr(settings, 'EMAIL_SUBJECT_PREFIX', '')}Yeni iletişim mesajı"
+            body = (
+                f"Yeni iletişim mesajı:\n\n"
+                f"Ad: {name}\n"
+                f"E-posta: {email}\n"
+                f"Tarih: {timezone.now():%Y-%m-%d %H:%M}\n\n"
+                f"Mesaj:\n{message}\n\n"
+                f"Mesaj ID: {cm.id}"
+            )
+            em = EmailMessage(
+                subject=subject,
+                body=body,
+                from_email=getattr(settings, "DEFAULT_FROM_EMAIL", email) or email,
+                to=getattr(settings, "NOTIFY_DEFAULT_RECIPIENTS", [email]),
+                headers={"Reply-To": email},
+            )
+            em.send(fail_silently=False)
+
+            # 3) Kullanıcıya otomatik “alındı” maili (opsiyonel)
+            try:
+                ack = EmailMessage(
+                    subject=f"{getattr(settings, 'EMAIL_SUBJECT_PREFIX', '')}Mesajınız alındı",
+                    body=f"Merhaba {name},\n\nMesajınız alındı. En kısa sürede dönüş yapacağız.\n\n— Blogend",
+                    from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None) or email,
+                    to=[email],
+                )
+                ack.send(fail_silently=True)
+            except Exception:
+                pass
+
+        except Exception as exc:
+            logger.exception("Contact mail gönderilemedi: %s", exc)
+
+        # 4) Kullanıcıya başarı mesajı + redirect (F5 ile tekrar postu engeller)
+        messages.success(request, "Mesajın alındı, teşekkürler! En kısa sürede dönüş yapacağız.")
+        return redirect("blogs:contact")
+
+    return render(request, "blogs/contact.html", {"form": form})
+
 
 
 def static_page(request, slug):
