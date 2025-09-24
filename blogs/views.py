@@ -323,16 +323,16 @@ def contact_view(request):
                 body=body,
                 from_email=getattr(settings, "DEFAULT_FROM_EMAIL", email) or email,
                 to=getattr(settings, "NOTIFY_DEFAULT_RECIPIENTS", [email]),
-                headers={"Reply-To": email},
+                headers={"Reply-To": email},  # → Gmail’den yanıtladığında doğrudan kullanıcıya gider
             )
             em.send(fail_silently=False)
 
-            # 3) Kullanıcıya otomatik “alındı” maili (opsiyonel)
+            # 3) Kullanıcıya otomatik “alındı” maili
             try:
                 ack = EmailMessage(
                     subject=f"{getattr(settings, 'EMAIL_SUBJECT_PREFIX', '')}Mesajınız alındı",
                     body=f"Merhaba {name},\n\nMesajınız alındı. En kısa sürede dönüş yapacağız.\n\n— Blogend",
-                    from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None) or email,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
                     to=[email],
                 )
                 ack.send(fail_silently=True)
@@ -342,13 +342,11 @@ def contact_view(request):
         except Exception as exc:
             logger.exception("Contact mail gönderilemedi: %s", exc)
 
-        # 4) Kullanıcıya başarı mesajı + redirect (F5 ile tekrar postu engeller)
+        # 4) Kullanıcıya başarı mesajı + redirect
         messages.success(request, "Mesajın alındı, teşekkürler! En kısa sürede dönüş yapacağız.")
         return redirect("blogs:contact")
 
     return render(request, "blogs/contact.html", {"form": form})
-
-
 
 def static_page(request, slug):
     page = get_object_or_404(StaticPage, slug=slug)
