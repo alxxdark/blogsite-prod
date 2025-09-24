@@ -44,9 +44,6 @@
     .navbar-toggler:not(.collapsed) .toggler-line:nth-child(2){opacity:0;}
     .navbar-toggler:not(.collapsed) .toggler-line:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
 
-    /* üst geri ikonu – sade */
-    #appBackBtn{background:transparent;border:none;padding:6px 10px;font-size:1.6rem;color:#fff;display:flex;align-items:center;justify-content:center;touch-action:manipulation;-webkit-tap-highlight-color:transparent;z-index:1001}
-    #appBackBtn:focus{outline:none;box-shadow:none!important}
     .navbar{position:relative;z-index:1000}
 
     /* ALT TARAYICI ÇUBUĞU (Holigan tarzı) */
@@ -127,10 +124,7 @@
   <nav class="navbar navbar-dark bg-dark">
     <div class="container-fluid">
 
-      <!-- ÜST GERİ OKU (ikon) -->
-      <button id="appBackBtn" class="d-none" type="button" aria-label="Geri">
-        <i class="fa fa-chevron-left"></i>
-      </button>
+      <!-- (ÜST GERİ OKU kaldırıldı) -->
 
       <!-- Hamburger -->
       <button class="navbar-toggler collapsed" type="button"
@@ -178,7 +172,7 @@
   <button class="tb-btn" data-action="home"   aria-label="Ana sayfa"><i class="fa fa-home"></i></button>
 </div>
 
-<!-- Cookie Modal (varsayılanın aynı) -->
+<!-- Cookie Modal -->
 <div id="cookieModal" class="cookie-modal" style="display:none;">
   <p>We use cookies to personalize content and analyze our traffic.</p>
   <button class="btn btn-primary btn-sm" onclick="acceptCookies()">Accept All</button>
@@ -220,10 +214,9 @@
 </script>
 {% endif %}
 
-<!-- Yeni: üst geri + alt toolbar davranışı -->
+<!-- Alt toolbar davranışı (üst geri butonu olmadan) -->
 <script>
 (function () {
-  const backBtn = document.getElementById('appBackBtn');
   const bar = document.getElementById('appToolbar');
 
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches
@@ -231,9 +224,8 @@
   const isMobile = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
 
   const shouldShow = isStandalone || isMobile || window.innerWidth <= 768;
-  if (shouldShow) {
-    if (backBtn) backBtn.classList.remove('d-none');
-    if (bar) bar.classList.remove('d-none');
+  if (shouldShow && bar) {
+    bar.classList.remove('d-none');
   }
 
   // İlk state – iOS history=1 durumları için
@@ -250,7 +242,7 @@
       }
       if (history.length > 1) {
         history.back();
-        setTimeout(()=>{ /* no-op fallback */ location.href = '/'; }, 300);
+        setTimeout(()=>{ location.href = '/'; }, 300);
         return;
       }
       location.href = '/';
@@ -267,8 +259,6 @@
     }
   }
 
-  if (backBtn) backBtn.addEventListener('click', smartBack, { passive:true });
-
   if (bar) bar.addEventListener('click', (e)=>{
     const btn = e.target.closest('.tb-btn'); if (!btn) return;
     const act = btn.dataset.action;
@@ -278,7 +268,7 @@
     if (act === 'home')   location.href = '/';
   }, { passive:true });
 
-  // Sol kenar "geri" swipe jesti
+  // Sol kenar "geri" swipe jesti (opsiyonel)
   let x0=null, y0=null;
   window.addEventListener('touchstart', (e)=>{ const t=e.touches[0]; x0=t.clientX; y0=t.clientY; }, {passive:true});
   window.addEventListener('touchend', (e)=>{
@@ -291,7 +281,7 @@
 })();
 </script>
 
-<!-- Kayıt sonrası popup (aynı) -->
+<!-- Kayıt sonrası popup -->
 {% if new_user %}
 <script>
   Swal.fire({title:"🎉 Hoş geldiniz!",text:"Aramıza katıldığınız için teşekkürler.",icon:"success",showConfirmButton:false,timer:2600});
