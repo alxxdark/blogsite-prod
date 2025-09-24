@@ -362,3 +362,7 @@ def comment_add(request, post_id):
         return JsonResponse(_comment_json(c, parent_id=parent_id or None))
 
     return redirect("blogs:blogs", slug=post.slug)
+
+
+def privacy_policy(request):
+    return render(request, "blogs/privacy_policy.html")

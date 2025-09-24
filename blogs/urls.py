@@ -13,6 +13,7 @@ urlpatterns = [
     path("profile/edit/", views.profile_edit_me, name="profile_edit_me"),
     path("search/", views.search, name="search"),
     path("about/", views.about, name="about"),
+    path("privacy-policy/", views.privacy_policy, name="privacy"),
     path("contact/", views.contact_view, name="contact"),
     path("page/<slug:slug>/", views.static_page, name="static_page"),
     path("post/<int:post_id>/comments/add/", views.comment_add, name="comment_add"),
